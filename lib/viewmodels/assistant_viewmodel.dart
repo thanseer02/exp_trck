@@ -15,12 +15,9 @@ class AssistantViewModel extends ChangeNotifier {
 
   AssistantViewModel(this._repository, this._parser, this._generator) {
     // Add initial greeting
-    _chatHistory.add(
-      AssistantResponse(
-        message:
-            'Hi there! I am your offline Money Assistant. How can I help you today?',
-      ),
-    );
+    _chatHistory.add(AssistantResponse(
+      message: 'Hi there! I am your offline Money Assistant. How can I help you today?',
+    ));
   }
 
   List<AssistantResponse> get chatHistory => _chatHistory;
@@ -36,54 +33,46 @@ class AssistantViewModel extends ChangeNotifier {
 
     // 2. Parse the message
     final query = _parser.parse(message);
-
+    
     // Simulate slight processing delay for realism
     await Future.delayed(const Duration(milliseconds: 600));
 
     dynamic data;
-
+    
     // 3. Query Repository based on Intent
     try {
       switch (query.intent) {
-        case AssistantIntent.queryBalance:
+        case AssistantIntent.balance:
           data = await _repository.getBalance();
           break;
-        case AssistantIntent.queryTotalExpense:
+        case AssistantIntent.totalExpense:
           data = await _repository.getTotalExpenses();
           break;
-        case AssistantIntent.queryTotalIncome:
+        case AssistantIntent.totalIncome:
           data = await _repository.getTotalIncome();
           break;
-        case AssistantIntent.queryRecentTransactions:
+        case AssistantIntent.recentTransactions:
           final recent = await _repository.getRecentTransactions(limit: 3);
           if (recent.isEmpty) {
             data = 'No recent transactions.';
           } else {
-            data = recent
-                .map(
-                  (t) => '- \${t.amount} for \${t.category?.name ?? "General"}',
-                )
-                .join('\\n');
+            data = recent.map((t) => '- \${t.amount} for \${t.category?.name ?? "General"}').join('\\n');
           }
           break;
-        case AssistantIntent.queryCategoryExpense:
-        case AssistantIntent.greeting:
-        case AssistantIntent.help:
-        case AssistantIntent.unknown:
-          data = null; // No database query needed
+        default:
+          data = null; // No database query needed for placeholders
           break;
       }
 
       // 4. Generate Response
       final response = _generator.generateResponse(query.intent, data);
       _chatHistory.add(response);
+      
     } catch (e) {
-      _chatHistory.add(
-        AssistantResponse(
-          message: 'Sorry, I ran into an issue retrieving that information.',
-          isError: true,
-        ),
-      );
+      _chatHistory.add(AssistantResponse(
+        message: 'Sorry, I ran into an issue retrieving that information.',
+        isError: true,
+      ));
     } finally {
       _isProcessing = false;
       notifyListeners();
