@@ -443,7 +443,7 @@ class _WeeklyCadenceSection extends StatelessWidget {
         }
 
         // Aggregate data
-        for (final tx in vm.transactions) {
+        for (final tx in vm.weeklyCadenceTransactions) {
           final date = tx.date.toLocal();
           final diff = now.difference(date).inDays;
 

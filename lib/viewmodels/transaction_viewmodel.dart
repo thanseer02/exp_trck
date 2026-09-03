@@ -17,6 +17,7 @@ class TransactionViewModel extends ChangeNotifier {
   TransactionViewModel(this._repository);
 
   List<Transaction> _transactions = [];
+  List<Transaction> _weeklyCadenceTransactions = [];
   List<Transaction> _recentTransactions = [];
   List<CategorySpending> _topSpending = [];
   MonthlySummary? _monthlySummary;
@@ -41,6 +42,7 @@ class TransactionViewModel extends ChangeNotifier {
 
   Map<String, List<Transaction>>? _cachedGroupedTransactions;
 
+  List<Transaction> get weeklyCadenceTransactions => _weeklyCadenceTransactions;
   List<Transaction> get recentTransactions => _recentTransactions;
   List<CategorySpending> get topSpending => _topSpending;
   MonthlySummary? get monthlySummary => _monthlySummary;
@@ -94,6 +96,10 @@ class TransactionViewModel extends ChangeNotifier {
     _monthlySummary = await _repository.getMonthlySummary(now);
     _recentTransactions = await _repository.getRecentTransactions(limit: 5);
     _topSpending = await _repository.getTopExpenses(now, limit: 3);
+    _weeklyCadenceTransactions = await _repository.getTransactionsForPeriod(
+      now.subtract(const Duration(days: 7)), 
+      now
+    );
 
     if (notify) {
       _isLoading = false;
