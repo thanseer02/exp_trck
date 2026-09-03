@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import 'package:intl/intl.dart';
+import 'category_details_view.dart';
 
 class AnalyticsView extends StatefulWidget {
   const AnalyticsView({super.key});
@@ -152,9 +153,22 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                     const SizedBox(height: 16),
                     Card(
                       color: Colors.red.shade50,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CategoryDetailsView(
+                                category: topExpenses.first.category,
+                                month: vm.analyticsMonth,
+                              ),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
                           children: [
                             CircleAvatar(
                               radius: 24,
@@ -186,7 +200,8 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 32),
 
                     // Spending By Category Chart
                     const Text('Spending By Category', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -195,9 +210,21 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                       final percentage = (spending.totalAmount / totalExpense) * 100;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CategoryDetailsView(
+                                  category: spending.category,
+                                  month: vm.analyticsMonth,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -242,8 +269,9 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                             ),
                           ],
                         ),
-                      );
-                    }),
+                      ),
+                    );
+                  }),
                   ]
                 ],
               ),
