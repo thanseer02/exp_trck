@@ -3,7 +3,7 @@ import 'dashboard_view.dart';
 import 'transactions_view.dart';
 import 'analytics_view.dart';
 import 'settings_view.dart';
-import 'add_transaction_view.dart';
+import 'add_edit_transaction_view.dart';
 
 class MainNavigationView extends StatefulWidget {
   const MainNavigationView({super.key});
@@ -39,7 +39,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddTransactionView()),
+            MaterialPageRoute(builder: (context) => const AddEditTransactionView()),
           );
         },
         child: const Icon(Icons.add),

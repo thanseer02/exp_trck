@@ -6,20 +6,21 @@ import '../models/category.dart';
 import '../repositories/category_repository.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 
-class AddTransactionView extends StatefulWidget {
-  const AddTransactionView({super.key});
+class AddEditTransactionView extends StatefulWidget {
+  final Transaction? transaction;
+  const AddEditTransactionView({super.key, this.transaction});
 
   @override
-  State<AddTransactionView> createState() => _AddTransactionViewState();
+  State<AddEditTransactionView> createState() => _AddEditTransactionViewState();
 }
 
-class _AddTransactionViewState extends State<AddTransactionView> {
+class _AddEditTransactionViewState extends State<AddEditTransactionView> {
   final _formKey = GlobalKey<FormState>();
   
-  TransactionType _selectedType = TransactionType.expense;
+  late TransactionType _selectedType;
   double? _amount;
   Category? _selectedCategory;
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
   String? _note;
   
   List<Category> _categories = [];
@@ -28,6 +29,16 @@ class _AddTransactionViewState extends State<AddTransactionView> {
   @override
   void initState() {
     super.initState();
+    final tx = widget.transaction;
+    if (tx != null) {
+      _selectedType = tx.type;
+      _amount = tx.amount;
+      _selectedDate = tx.date;
+      _note = tx.note;
+    } else {
+      _selectedType = TransactionType.expense;
+      _selectedDate = DateTime.now();
+    }
     _loadCategories();
   }
 
@@ -39,9 +50,21 @@ class _AddTransactionViewState extends State<AddTransactionView> {
       if (mounted) {
         setState(() {
           _categories = allCategories.where((c) => c.type == _selectedType).toList();
-          if (_categories.isNotEmpty) {
-            _selectedCategory = _categories.first;
+          
+          if (widget.transaction != null && _selectedCategory == null) {
+            // Initial load for edit mode
+            try {
+              _selectedCategory = _categories.firstWhere((c) => c.id == widget.transaction!.categoryId);
+            } catch (_) {
+              _selectedCategory = _categories.isNotEmpty ? _categories.first : null;
+            }
+          } else {
+             // Creating new or switching types
+            if (_categories.isNotEmpty && !_categories.contains(_selectedCategory)) {
+              _selectedCategory = _categories.first;
+            }
           }
+          
           _isLoading = false;
         });
       }
@@ -79,6 +102,45 @@ class _AddTransactionViewState extends State<AddTransactionView> {
     }
   }
 
+  Future<void> _deleteTransaction() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Transaction'),
+        content: const Text('Are you sure you want to delete this transaction?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted && widget.transaction?.id != null) {
+      try {
+        await context.read<TransactionViewModel>().deleteTransaction(widget.transaction!.id!);
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Transaction deleted successfully!')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error deleting transaction: $e')),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _saveTransaction() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -93,26 +155,34 @@ class _AddTransactionViewState extends State<AddTransactionView> {
 
     _formKey.currentState!.save();
 
+    final isEdit = widget.transaction != null;
     final transaction = Transaction(
+      id: isEdit ? widget.transaction!.id : null,
       type: _selectedType,
       amount: _amount!,
       categoryId: _selectedCategory!.id!,
       date: _selectedDate,
       note: _note,
+      createdAt: isEdit ? widget.transaction!.createdAt : null,
     );
 
     try {
-      await context.read<TransactionViewModel>().addTransaction(transaction);
+      if (isEdit) {
+        await context.read<TransactionViewModel>().updateTransaction(transaction);
+      } else {
+        await context.read<TransactionViewModel>().addTransaction(transaction);
+      }
+      
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction added successfully!')),
+          SnackBar(content: Text(isEdit ? 'Transaction updated!' : 'Transaction added!')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error adding transaction: $e')),
+          SnackBar(content: Text('Error saving transaction: $e')),
         );
       }
     }
@@ -120,9 +190,17 @@ class _AddTransactionViewState extends State<AddTransactionView> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.transaction != null;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Transaction'),
+        title: Text(isEdit ? 'Edit Transaction' : 'Add Transaction'),
+        actions: [
+          if (isEdit)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: _deleteTransaction,
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -150,6 +228,7 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
+                      initialValue: _amount?.toString(),
                       decoration: const InputDecoration(
                         labelText: 'Amount',
                         prefixText: '\$ ',
@@ -216,6 +295,7 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
+                      initialValue: _note,
                       decoration: const InputDecoration(
                         labelText: 'Note (Optional)',
                         border: OutlineInputBorder(),
