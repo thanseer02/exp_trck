@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
+import '../viewmodels/settings_viewmodel.dart';
 import 'package:intl/intl.dart';
 import 'category_details_view.dart';
 
@@ -117,7 +118,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                   const SizedBox(height: 8),
                   Center(
                     child: Text(
-                      '\$${totalExpense.toStringAsFixed(2)}',
+                      '${context.read<SettingsViewModel>().currencySymbol}${totalExpense.toStringAsFixed(2)}',
                       style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.red),
                     ),
                   ),
@@ -132,10 +133,10 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 2,
                     children: [
-                      _buildMetricCard('Total Income', '\$${summary?.totalIncome.toStringAsFixed(2) ?? '0.00'}', Colors.green),
-                      _buildMetricCard('Balance', '\$${summary?.balance.toStringAsFixed(2) ?? '0.00'}', Colors.deepPurple),
+                      _buildMetricCard('Total Income', '${context.read<SettingsViewModel>().currencySymbol}${summary?.totalIncome.toStringAsFixed(2) ?? '0.00'}', Colors.green),
+                      _buildMetricCard('Balance', '${context.read<SettingsViewModel>().currencySymbol}${summary?.balance.toStringAsFixed(2) ?? '0.00'}', Colors.deepPurple),
                       _buildMetricCard('Transactions', '${vm.analyticsTransactionCount}', Colors.blue),
-                      _buildMetricCard('Avg Expense', '\$${averageExpense.toStringAsFixed(2)}', Colors.orange),
+                      _buildMetricCard('Avg Expense', '${context.read<SettingsViewModel>().currencySymbol}${averageExpense.toStringAsFixed(2)}', Colors.orange),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -148,6 +149,28 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                       ),
                     )
                   else ...[
+                    if (vm.monthlyInsights.isNotEmpty) ...[
+                      const Text('Monthly Insights', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      ...vm.monthlyInsights.map((insight) {
+                        final isPositive = insight.contains('decreased') || insight.contains('increased by') && insight.contains('income');
+                        final color = isPositive ? Colors.green : Colors.orange;
+                        final icon = isPositive ? Icons.trending_down : Icons.trending_up;
+                        
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: color.withValues(alpha: 0.1),
+                              child: Icon(icon, color: color, size: 20),
+                            ),
+                            title: Text(insight.replaceAll('\$', context.read<SettingsViewModel>().currencySymbol), style: const TextStyle(fontSize: 14)),
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 32),
+                    ],
+
                     // Biggest Expense Category Card
                     const Text('Biggest Expense', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
@@ -193,7 +216,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                               ),
                             ),
                             Text(
-                              '\$${topExpenses.first.totalAmount.toStringAsFixed(2)}',
+                              '${context.read<SettingsViewModel>().currencySymbol}${topExpenses.first.totalAmount.toStringAsFixed(2)}',
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
                             ),
                           ],
@@ -237,7 +260,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                                 ),
                                 Row(
                                   children: [
-                                    Text('\$${spending.totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    Text('${context.read<SettingsViewModel>().currencySymbol}${spending.totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                                     const SizedBox(width: 8),
                                     Text('${percentage.toStringAsFixed(1)}%', style: const TextStyle(color: Colors.grey)),
                                   ],

@@ -63,11 +63,27 @@ class TransactionRepository {
     }
   }
 
-  Future<int> deleteTransaction(int id) async {
+  Future<void> deleteTransaction(int id) async {
     try {
-      return await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
+      await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
     } catch (e) {
       throw Exception('Failed to delete transaction: $e');
+    }
+  }
+
+  Future<void> deleteAllTransactions() async {
+    try {
+      await _db.delete(_db.transactions).go();
+    } catch (e) {
+      throw Exception('Failed to delete all transactions: $e');
+    }
+  }
+
+  Future<void> wipeData() async {
+    try {
+      await _db.wipeData();
+    } catch (e) {
+      throw Exception('Failed to wipe data: $e');
     }
   }
 

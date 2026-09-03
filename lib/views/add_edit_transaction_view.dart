@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction.dart';
+import '../viewmodels/settings_viewmodel.dart';
 import '../models/transaction_type.dart';
 import '../models/category.dart';
 import '../viewmodels/category_viewmodel.dart';
@@ -208,10 +209,10 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                     const SizedBox(height: 16),
                     TextFormField(
                       initialValue: _amount?.toString(),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Amount',
-                        prefixText: '\$ ',
-                        border: OutlineInputBorder(),
+                        prefixText: '${context.read<SettingsViewModel>().currencySymbol} ',
+                        border: const OutlineInputBorder(),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../viewmodels/settings_viewmodel.dart';
 import '../models/category.dart';
 import '../models/transaction_type.dart';
 import '../viewmodels/transaction_viewmodel.dart';
@@ -84,7 +85,7 @@ class CategoryDetailsView extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '\$${totalSpent.toStringAsFixed(2)}',
+                  '${context.read<SettingsViewModel>().currencySymbol}${totalSpent.toStringAsFixed(2)}',
                   style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: color),
                 ),
                 const SizedBox(height: 24),
@@ -93,7 +94,7 @@ class CategoryDetailsView extends StatelessWidget {
                   children: [
                     _buildStatCol('Transactions', '$txCount'),
                     Container(height: 30, width: 1, color: Colors.grey.shade300),
-                    _buildStatCol('Avg Transaction', '\$${avgTx.toStringAsFixed(2)}'),
+                    _buildStatCol('Avg Transaction', '${context.read<SettingsViewModel>().currencySymbol}${avgTx.toStringAsFixed(2)}'),
                   ],
                 ),
               ],
@@ -130,7 +131,7 @@ class CategoryDetailsView extends StatelessWidget {
                           title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name),
                           subtitle: Text(DateFormat.yMMMd().format(tx.date.toLocal())),
                           trailing: Text(
-                            '${isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                            '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().currencySymbol}${tx.amount.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: color,

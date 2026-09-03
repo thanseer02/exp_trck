@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../models/transaction_type.dart';
+import '../viewmodels/settings_viewmodel.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -71,7 +72,7 @@ class _DashboardViewState extends State<DashboardView> {
                   const Text('Total Balance', style: TextStyle(fontSize: 16, color: Colors.grey)),
                   const SizedBox(height: 8),
                   Text(
-                    '\$${viewModel.balance.toStringAsFixed(2)}',
+                    '${context.read<SettingsViewModel>().currencySymbol}${viewModel.balance.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -99,7 +100,7 @@ class _DashboardViewState extends State<DashboardView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '\$${viewModel.monthlySummary?.totalIncome.toStringAsFixed(2) ?? '0.00'}',
+                            '${context.read<SettingsViewModel>().currencySymbol}${viewModel.monthlySummary?.totalIncome.toStringAsFixed(2) ?? '0.00'}',
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -125,7 +126,7 @@ class _DashboardViewState extends State<DashboardView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '\$${viewModel.monthlySummary?.totalExpense.toStringAsFixed(2) ?? '0.00'}',
+                            '${context.read<SettingsViewModel>().currencySymbol}${viewModel.monthlySummary?.totalExpense.toStringAsFixed(2) ?? '0.00'}',
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -167,7 +168,7 @@ class _DashboardViewState extends State<DashboardView> {
                         ],
                       ),
                       Text(
-                        '\$${spending.totalAmount.toStringAsFixed(2)}',
+                        '${context.read<SettingsViewModel>().currencySymbol}${spending.totalAmount.toStringAsFixed(2)}',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ],
@@ -203,7 +204,7 @@ class _DashboardViewState extends State<DashboardView> {
                     title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : tx.type.name.toUpperCase()),
                     subtitle: Text(tx.date.toLocal().toString().split(' ')[0]),
                     trailing: Text(
-                      '${isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                      '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().currencySymbol}${tx.amount.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: isIncome ? Colors.green : Colors.red,

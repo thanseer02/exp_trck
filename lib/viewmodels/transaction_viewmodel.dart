@@ -50,11 +50,13 @@ class TransactionViewModel extends ChangeNotifier {
   MonthlySummary? _analyticsMonthlySummary;
   List<CategorySpending> _analyticsTopExpenses = [];
   int _analyticsTransactionCount = 0;
+  List<String> _monthlyInsights = [];
   
   DateTime get analyticsMonth => _analyticsMonth;
   MonthlySummary? get analyticsMonthlySummary => _analyticsMonthlySummary;
   List<CategorySpending> get analyticsTopExpenses => _analyticsTopExpenses;
   int get analyticsTransactionCount => _analyticsTransactionCount;
+  List<String> get monthlyInsights => _monthlyInsights;
 
   Future<void> loadTransactions() async {
     _isLoading = true;
@@ -88,8 +90,66 @@ class TransactionViewModel extends ChangeNotifier {
     _analyticsTopExpenses = await _repository.getTopExpenses(_analyticsMonth, limit: 100);
     _analyticsTransactionCount = await _repository.getTransactionCount(_analyticsMonth);
 
+    // Load previous month data
+    final prevMonth = DateTime(_analyticsMonth.year, _analyticsMonth.month - 1);
+    final prevSummary = await _repository.getMonthlySummary(prevMonth);
+    final prevTopExpenses = await _repository.getTopExpenses(prevMonth, limit: 100);
+    
+    _generateInsights(prevSummary, prevTopExpenses);
+
     _isLoading = false;
     notifyListeners();
+  }
+
+  void _generateInsights(MonthlySummary prevSummary, List<CategorySpending> prevTopExpenses) {
+    _monthlyInsights = [];
+    final current = _analyticsMonthlySummary;
+    if (current == null) return;
+
+    // Data Safeguard
+    if (prevSummary.totalExpense == 0 && prevSummary.totalIncome == 0) {
+      return; // Not enough data for meaningful comparison
+    }
+
+    // Total Expenses Insight
+    if (current.totalExpense > prevSummary.totalExpense) {
+      final diff = current.totalExpense - prevSummary.totalExpense;
+      _monthlyInsights.add('You spent \$${diff.toStringAsFixed(2)} more this month.');
+    } else if (current.totalExpense < prevSummary.totalExpense) {
+      if (prevSummary.totalExpense > 0) {
+        final percent = ((prevSummary.totalExpense - current.totalExpense) / prevSummary.totalExpense * 100).toInt();
+        _monthlyInsights.add('Your total expenses decreased by $percent%.');
+      }
+    }
+
+    // Total Income Insight
+    if (current.totalIncome > prevSummary.totalIncome && prevSummary.totalIncome > 0) {
+      final percent = ((current.totalIncome - prevSummary.totalIncome) / prevSummary.totalIncome * 100).toInt();
+      _monthlyInsights.add('Your income increased by $percent% this month!');
+    }
+
+    // Category Insights (Top 2 categories from current month)
+    int categoryInsightsAdded = 0;
+    for (var currentSpending in _analyticsTopExpenses) {
+      if (categoryInsightsAdded >= 2) break;
+      
+      try {
+        final prevSpending = prevTopExpenses.firstWhere((s) => s.category.id == currentSpending.category.id);
+        
+        final diff = currentSpending.totalAmount - prevSpending.totalAmount;
+        if (diff.abs() > 50) { // Only show significant changes
+          final catName = currentSpending.category.name;
+          if (diff > 0) {
+            _monthlyInsights.add('$catName spending increased by \$${diff.toStringAsFixed(0)}.');
+          } else {
+            _monthlyInsights.add('$catName spending decreased by \$${diff.abs().toStringAsFixed(0)}.');
+          }
+          categoryInsightsAdded++;
+        }
+      } catch (_) {
+        // Category didn't exist or wasn't spent on last month
+      }
+    }
   }
 
   void setAnalyticsMonth(DateTime month) {

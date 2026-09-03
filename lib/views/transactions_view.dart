@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
+import '../viewmodels/settings_viewmodel.dart';
 import '../models/transaction.dart';
 import '../models/transaction_type.dart';
 import 'add_edit_transaction_view.dart';
@@ -227,7 +228,7 @@ class _TransactionsViewState extends State<TransactionsView> {
                                   title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : tx.type.name.toUpperCase()),
                                   subtitle: Text(tx.date.toLocal().toString().split(' ')[0]),
                                   trailing: Text(
-                                    '${isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                                    '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().currencySymbol}${tx.amount.toStringAsFixed(2)}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: isIncome ? Colors.green : Colors.red,
