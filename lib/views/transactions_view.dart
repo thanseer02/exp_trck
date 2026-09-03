@@ -224,33 +224,61 @@ class _TransactionsViewState extends State<TransactionsView> {
                               ),
                               ...transactions.map((tx) {
                                 final isIncome = tx.type == TransactionType.income;
-                                return ListTile(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => AddEditTransactionView(transaction: tx),
+                                  return Dismissible(
+                                    key: Key('tx_${tx.id}'),
+                                    direction: DismissDirection.endToStart,
+                                    background: Container(
+                                      color: Colors.red,
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.only(right: 16),
+                                      child: const Icon(Icons.delete, color: Colors.white),
+                                    ),
+                                    onDismissed: (direction) async {
+                                      final vm = context.read<TransactionViewModel>();
+                                      await vm.deleteTransaction(tx.id!);
+                                      
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: const Text('Transaction deleted'),
+                                            action: SnackBarAction(
+                                              label: 'UNDO',
+                                              onPressed: () async {
+                                                await vm.addTransaction(tx);
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: ListTile(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => AddEditTransactionView(transaction: tx),
+                                          ),
+                                        );
+                                      },
+                                      leading: CircleAvatar(
+                                        backgroundColor: isIncome ? Colors.green.shade100 : Colors.red.shade100,
+                                        child: Icon(
+                                          isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                                          color: isIncome ? Colors.green : Colors.red,
+                                        ),
                                       ),
-                                    );
-                                  },
-                                  leading: CircleAvatar(
-                                    backgroundColor: isIncome ? Colors.green.shade100 : Colors.red.shade100,
-                                    child: Icon(
-                                      isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                                      color: isIncome ? Colors.green : Colors.red,
+                                      title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : tx.type.name.toUpperCase()),
+                                      subtitle: Text(tx.date.toLocal().toString().split(' ')[0]),
+                                      trailing: Text(
+                                        '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isIncome ? Colors.green : Colors.red,
+                                          fontSize: 16,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : tx.type.name.toUpperCase()),
-                                  subtitle: Text(tx.date.toLocal().toString().split(' ')[0]),
-                                  trailing: Text(
-                                    '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: isIncome ? Colors.green : Colors.red,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                );
+                                  );
                               }),
                             ],
                           );

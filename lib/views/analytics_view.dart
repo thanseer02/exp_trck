@@ -145,7 +145,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                   ),
                   const SizedBox(height: 32),
 
-                  if (totalExpense == 0)
+                  if (totalExpense <= 0 || topExpenses.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 48.0),
                       child: Center(
@@ -300,7 +300,6 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                     );
                   }),
                   ]
-                ],
                 ],
               ),
              ),

@@ -206,8 +206,12 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
       ),
       body: catVM.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
+          : SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
                 child: ListView(
@@ -249,6 +253,9 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                         }
                         if (amount <= 0) {
                           return 'Amount must be greater than 0';
+                        }
+                        if (amount > 1000000000) {
+                          return 'Amount is too large';
                         }
                         return null;
                       },
@@ -328,8 +335,11 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                     ),
                   ],
                 ),
+               ),
               ),
+             ),
             ),
+          ),
     );
   }
 }

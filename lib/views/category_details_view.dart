@@ -110,32 +110,60 @@ class CategoryDetailsView extends StatelessWidget {
                     itemCount: categoryTransactions.length,
                     itemBuilder: (context, index) {
                       final tx = categoryTransactions[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8.0),
-                        child: ListTile(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AddEditTransactionView(transaction: tx),
+                      return Dismissible(
+                        key: Key('tx_${tx.id}'),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 16),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        onDismissed: (direction) async {
+                          final vm = context.read<TransactionViewModel>();
+                          await vm.deleteTransaction(tx.id!);
+                          
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Transaction deleted'),
+                                action: SnackBarAction(
+                                  label: 'UNDO',
+                                  onPressed: () async {
+                                    await vm.addTransaction(tx);
+                                  },
+                                ),
                               ),
                             );
-                          },
-                          leading: CircleAvatar(
-                            backgroundColor: color.withValues(alpha: 0.1),
-                            child: Icon(
-                              isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                              color: color,
+                          }
+                        },
+                        child: Card(
+                          margin: const EdgeInsets.only(bottom: 8.0),
+                          child: ListTile(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => AddEditTransactionView(transaction: tx),
+                                ),
+                              );
+                            },
+                            leading: CircleAvatar(
+                              backgroundColor: color.withValues(alpha: 0.1),
+                              child: Icon(
+                                isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                                color: color,
+                              ),
                             ),
-                          ),
-                          title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name),
-                          subtitle: Text(DateFormat.yMMMd().format(tx.date.toLocal())),
-                          trailing: Text(
-                            '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: color,
-                              fontSize: 16,
+                            title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name),
+                            subtitle: Text(DateFormat.yMMMd().format(tx.date.toLocal())),
+                            trailing: Text(
+                              '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: color,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ),

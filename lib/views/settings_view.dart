@@ -194,8 +194,12 @@ class SettingsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        children: [
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: ListView(
+              children: [
           _buildSectionHeader('Preferences'),
           ListTile(
             leading: const Icon(Icons.attach_money),
@@ -249,8 +253,11 @@ class SettingsView extends StatelessWidget {
             title: const Text('About Application'),
             onTap: () => _showAbout(context),
           ),
-        ],
-      ),
+          ],
+             ),
+            ),
+          ),
+        ),
     );
   }
 

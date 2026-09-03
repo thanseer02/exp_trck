@@ -58,19 +58,25 @@ class TransactionViewModel extends ChangeNotifier {
   int get analyticsTransactionCount => _analyticsTransactionCount;
   List<String> get monthlyInsights => _monthlyInsights;
 
-  Future<void> loadTransactions() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> loadTransactions({bool notify = true}) async {
+    if (notify) {
+      _isLoading = true;
+      notifyListeners();
+    }
     
     _transactions = await _repository.getAllTransactions();
     
-    _isLoading = false;
-    notifyListeners();
+    if (notify) {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> loadDashboardData() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> loadDashboardData({bool notify = true}) async {
+    if (notify) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     final now = DateTime.now();
     _balance = await _repository.getBalance();
@@ -78,13 +84,17 @@ class TransactionViewModel extends ChangeNotifier {
     _recentTransactions = await _repository.getRecentTransactions(limit: 5);
     _topSpending = await _repository.getTopExpenses(now, limit: 3);
 
-    _isLoading = false;
-    notifyListeners();
+    if (notify) {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> loadAnalyticsData() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> loadAnalyticsData({bool notify = true}) async {
+    if (notify) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     _analyticsMonthlySummary = await _repository.getMonthlySummary(_analyticsMonth);
     _analyticsTopExpenses = await _repository.getTopExpenses(_analyticsMonth, limit: 100);
@@ -96,6 +106,22 @@ class TransactionViewModel extends ChangeNotifier {
     final prevTopExpenses = await _repository.getTopExpenses(prevMonth, limit: 100);
     
     _generateInsights(prevSummary, prevTopExpenses);
+
+    if (notify) {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> refreshAll() async {
+    _isLoading = true;
+    notifyListeners();
+    
+    await Future.wait([
+      loadTransactions(notify: false),
+      loadDashboardData(notify: false),
+      loadAnalyticsData(notify: false),
+    ]);
 
     _isLoading = false;
     notifyListeners();
@@ -159,23 +185,17 @@ class TransactionViewModel extends ChangeNotifier {
 
   Future<void> addTransaction(Transaction transaction) async {
     await _repository.addTransaction(transaction);
-    await loadTransactions();
-    await loadDashboardData();
-    await loadAnalyticsData();
+    await refreshAll();
   }
 
   Future<void> updateTransaction(Transaction transaction) async {
     await _repository.updateTransaction(transaction);
-    await loadTransactions();
-    await loadDashboardData();
-    await loadAnalyticsData();
+    await refreshAll();
   }
 
   Future<void> deleteTransaction(int id) async {
     await _repository.deleteTransaction(id);
-    await loadTransactions();
-    await loadDashboardData();
-    await loadAnalyticsData();
+    await refreshAll();
   }
 
   // --- Filtering & Sorting ---
