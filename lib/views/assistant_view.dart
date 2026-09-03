@@ -250,6 +250,60 @@ class _MessageBubble extends StatelessWidget {
                            ),
                          ),
 
+                      // Render help groups
+                      if (message.type == AssistantResponseType.help && message.helpGroups != null)
+                         Padding(
+                           padding: const EdgeInsets.only(top: 16.0),
+                           child: Column(
+                             crossAxisAlignment: CrossAxisAlignment.start,
+                             children: message.helpGroups!.entries.map((entry) {
+                               return Padding(
+                                 padding: const EdgeInsets.only(bottom: 12.0),
+                                 child: Column(
+                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                   children: [
+                                     Text(
+                                       entry.key,
+                                       style: const TextStyle(
+                                         color: AppColors.primary,
+                                         fontSize: 12,
+                                         fontWeight: FontWeight.bold,
+                                       ),
+                                     ),
+                                     const SizedBox(height: 8),
+                                     Wrap(
+                                       spacing: 8,
+                                       runSpacing: 8,
+                                       children: entry.value.map((example) {
+                                         return GestureDetector(
+                                           onTap: () {
+                                             context.read<AssistantViewModel>().processUserMessage(example);
+                                           },
+                                           child: Container(
+                                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                             decoration: BoxDecoration(
+                                               color: AppColors.backgroundDark,
+                                               borderRadius: BorderRadius.circular(12),
+                                               border: Border.all(color: AppColors.borderDark),
+                                             ),
+                                             child: Text(
+                                               example,
+                                               style: const TextStyle(
+                                                 color: AppColors.textPrimaryDark,
+                                                 fontSize: 13,
+                                               ),
+                                             ),
+                                           ),
+                                         );
+                                       }).toList(),
+                                     ),
+                                   ],
+                                 ),
+                               );
+                             }).toList(),
+                           ),
+                         ),
+
                       // Render comparison
                       if (message.type == AssistantResponseType.comparison && message.amount != null && message.lastAmount != null)
                          Padding(

@@ -433,6 +433,123 @@ Future<Map<String, dynamic>?> getLargestExpenseTransaction({DateTime? start, Dat
     }
   }
 
+  Future<int> getAssistantTransactionCount({DateTime? start, DateTime? end}) async {
+    try {
+      final countExp = _db.transactions.id.count();
+      var query = _db.selectOnly(_db.transactions)..addColumns([countExp]);
+      if (start != null && end != null) {
+        query.where(_db.transactions.date.isBetweenValues(start, end));
+      }
+      final result = await query.map((row) => row.read(countExp)).getSingleOrNull();
+      return result ?? 0;
+    } catch (e) {
+      throw Exception('Failed to get transaction count: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getMostExpensiveDay({DateTime? start, DateTime? end}) async {
+    try {
+      var query = _db.select(_db.transactions)..where((t) => t.type.equals('expense'));
+      if (start != null && end != null) {
+        query.where((t) => t.date.isBetweenValues(start, end));
+      }
+      final results = await query.get();
+      if (results.isEmpty) return null;
+      
+      final Map<String, double> dailyTotals = {};
+      for (var tx in results) {
+        final dateKey = '${tx.date.year}-${tx.date.month.toString().padLeft(2, '0')}-${tx.date.day.toString().padLeft(2, '0')}';
+        dailyTotals[dateKey] = (dailyTotals[dateKey] ?? 0.0) + tx.amount;
+      }
+      
+      String maxDay = '';
+      double maxAmount = 0;
+      dailyTotals.forEach((key, value) {
+        if (value > maxAmount) {
+          maxAmount = value;
+          maxDay = key;
+        }
+      });
+      
+      if (maxAmount == 0) return null;
+      
+      final parts = maxDay.split('-');
+      final parsedDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+      
+      return {
+        'date': parsedDate,
+        'amount': maxAmount,
+      };
+    } catch (e) {
+      throw Exception('Failed to get most expensive day: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCategoryChangeMost(DateTime currentStart, DateTime currentEnd, DateTime lastStart, DateTime lastEnd, {required bool isIncrease}) async {
+    try {
+      final currentQuery = _db.selectOnly(_db.transactions)
+        ..addColumns([_db.transactions.categoryId, _db.transactions.amount.sum()])
+        ..where(_db.transactions.type.equals('expense'))
+        ..where(_db.transactions.date.isBetweenValues(currentStart, currentEnd))
+        ..groupBy([_db.transactions.categoryId]);
+        
+      final lastQuery = _db.selectOnly(_db.transactions)
+        ..addColumns([_db.transactions.categoryId, _db.transactions.amount.sum()])
+        ..where(_db.transactions.type.equals('expense'))
+        ..where(_db.transactions.date.isBetweenValues(lastStart, lastEnd))
+        ..groupBy([_db.transactions.categoryId]);
+
+      final currentResults = await currentQuery.get();
+      final lastResults = await lastQuery.get();
+      
+      final Map<int, double> currentTotals = {};
+      for (var row in currentResults) {
+         currentTotals[row.read(_db.transactions.categoryId)!] = row.read(_db.transactions.amount.sum()) ?? 0.0;
+      }
+      
+      final Map<int, double> lastTotals = {};
+      for (var row in lastResults) {
+         lastTotals[row.read(_db.transactions.categoryId)!] = row.read(_db.transactions.amount.sum()) ?? 0.0;
+      }
+      
+      int? targetCategoryId;
+      double maxDifference = 0;
+      
+      final allCategoryIds = {...currentTotals.keys, ...lastTotals.keys};
+      
+      for (var catId in allCategoryIds) {
+        final current = currentTotals[catId] ?? 0.0;
+        final last = lastTotals[catId] ?? 0.0;
+        
+        final diff = current - last;
+        
+        if (isIncrease && diff > maxDifference) {
+          maxDifference = diff;
+          targetCategoryId = catId;
+        } else if (!isIncrease && diff < -maxDifference) {
+          maxDifference = -diff;
+          targetCategoryId = catId;
+        }
+      }
+      
+      if (targetCategoryId == null || maxDifference == 0) return null;
+      
+      final categoryQuery = _db.select(_db.categories)..where((c) => c.id.equals(targetCategoryId!));
+      final category = await categoryQuery.getSingleOrNull();
+      
+      if (category == null) return null;
+      
+      return {
+        'name': category.name,
+        'difference': maxDifference,
+        'current': currentTotals[targetCategoryId] ?? 0.0,
+        'last': lastTotals[targetCategoryId] ?? 0.0,
+      };
+    } catch (e) {
+      throw Exception('Failed to get category change: $e');
+    }
+  }
+
 
   Future<double> getIncomeForPeriod(DateTime start, DateTime end) async {
     try {

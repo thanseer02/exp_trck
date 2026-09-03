@@ -152,6 +152,36 @@ class AssistantViewModel extends ChangeNotifier {
           final lastExp = await _repository.getExpensesForPeriod(lastMonthStart, lastMonthEnd);
           data = {'current': currentExp, 'last': lastExp};
           break;
+        case AssistantIntent.transactionCount:
+          data = await _repository.getAssistantTransactionCount(start: start, end: end);
+          break;
+        case AssistantIntent.mostExpensiveDay:
+          data = await _repository.getMostExpensiveDay(start: start, end: end);
+          break;
+        case AssistantIntent.categoryIncreaseMost:
+        case AssistantIntent.categoryDecreaseMost:
+          final currentStart = start ?? DateTime(now.year, now.month, 1);
+          final currentEnd = end ?? DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          final lastStart = DateTime(currentStart.year, currentStart.month - 1, 1);
+          final lastEnd = DateTime(currentStart.year, currentStart.month, 0, 23, 59, 59);
+          final isIncrease = query.intent == AssistantIntent.categoryIncreaseMost;
+          data = await _repository.getCategoryChangeMost(currentStart, currentEnd, lastStart, lastEnd, isIncrease: isIncrease);
+          break;
+        case AssistantIntent.savings:
+          final pStart = start ?? DateTime(now.year, now.month, 1);
+          final pEnd = end ?? DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          final inc = await _repository.getIncomeForPeriod(pStart, pEnd);
+          final exp = await _repository.getExpensesForPeriod(pStart, pEnd);
+          data = {'income': inc, 'expense': exp, 'savings': inc - exp};
+          break;
+        case AssistantIntent.spendPercentage:
+          final pStart2 = start ?? DateTime(now.year, now.month, 1);
+          final pEnd2 = end ?? DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          final inc2 = await _repository.getIncomeForPeriod(pStart2, pEnd2);
+          final exp2 = await _repository.getExpensesForPeriod(pStart2, pEnd2);
+          final percentage = inc2 > 0 ? (exp2 / inc2) * 100 : 0.0;
+          data = {'percentage': percentage, 'income': inc2, 'expense': exp2};
+          break;
         default:
           data = null; 
           break;

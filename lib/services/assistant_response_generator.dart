@@ -142,13 +142,90 @@ class AssistantResponseGenerator {
           comparisonAmount: diff
         );
 
+      case AssistantIntent.transactionCount:
+        final count = (data as int?) ?? 0;
+        message = 'You made $count transactions for this period.';
+        return AssistantResponse(message: message);
+
+      case AssistantIntent.mostExpensiveDay:
+        if (data == null) {
+          return AssistantResponse(message: "You haven't spent anything recently.");
+        }
+        final date = data['date'] as DateTime;
+        final amt = data['amount'] as double;
+        final dateStr = DateFormat('MMMM d, yyyy').format(date);
+        message = 'Your most expensive day was $dateStr, when you spent ${_currencyFormat.format(amt)}.';
+        return AssistantResponse(message: message, type: AssistantResponseType.amount, amount: amt);
+
+      case AssistantIntent.categoryIncreaseMost:
+        if (data == null) {
+          return AssistantResponse(message: "I couldn't find any category that increased significantly.");
+        }
+        final name = data['name'] as String;
+        final diff = data['difference'] as double;
+        message = 'Your spending on $name increased the most by ${_currencyFormat.format(diff)} compared to the previous period.';
+        return AssistantResponse(message: message, type: AssistantResponseType.category, categoryName: name, amount: diff);
+
+      case AssistantIntent.categoryDecreaseMost:
+        if (data == null) {
+          return AssistantResponse(message: "I couldn't find any category that decreased significantly.");
+        }
+        final dName = data['name'] as String;
+        final dDiff = data['difference'] as double;
+        message = 'Your spending on $dName decreased the most by ${_currencyFormat.format(dDiff)} compared to the previous period.';
+        return AssistantResponse(message: message, type: AssistantResponseType.category, categoryName: dName, amount: dDiff);
+
+      case AssistantIntent.savings:
+        final sData = data as Map<String, dynamic>;
+        final savings = sData['savings'] as double;
+        if (savings > 0) {
+          message = 'You saved ${_currencyFormat.format(savings)} for this period.';
+        } else if (savings < 0) {
+          message = 'You spent ${_currencyFormat.format(savings.abs())} more than you earned for this period.';
+        } else {
+          message = 'You broke even exactly for this period.';
+        }
+        return AssistantResponse(message: message, type: AssistantResponseType.amount, amount: savings);
+
+      case AssistantIntent.spendPercentage:
+        final spData = data as Map<String, dynamic>;
+        final perc = spData['percentage'] as double;
+        final inc = spData['income'] as double;
+        if (inc == 0) {
+          return AssistantResponse(message: "You didn't have any income for this period.");
+        }
+        message = 'You spent ${perc.toStringAsFixed(1)}% of your income for this period.';
+        return AssistantResponse(message: message);
+
       case AssistantIntent.help:
-        message = 'I can help you track your finances! Try asking:\\n- What is my balance?\\n- Where did I spend the most?\\n- Did I spend more than last month?';
+        message = 'Here are some things you can ask me:';
+        final helpGroups = {
+          'Spending': [
+            'How much did I spend this month?',
+            'Where did I spend most?',
+            'How much did I spend on Food?'
+          ],
+          'Income': [
+            'How much did I earn?',
+            'How much income did I receive this month?'
+          ],
+          'Comparison': [
+            'Did I spend more than last month?',
+            'Which category increased?'
+          ],
+          'Transactions': [
+            'What was my biggest expense?',
+            'Show my recent expenses.'
+          ],
+          'Insights': [
+            'Give me a spending summary.',
+            'How am I doing this month?'
+          ],
+        };
         return AssistantResponse(
           message: message,
-          type: AssistantResponseType.actionButton,
-          actionLabel: 'View Dashboard',
-          actionRoute: AppRoutes.dashboard
+          type: AssistantResponseType.help,
+          helpGroups: helpGroups,
         );
 
       case AssistantIntent.unknown:
