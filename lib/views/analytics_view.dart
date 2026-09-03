@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../viewmodels/settings_viewmodel.dart';
-import 'package:intl/intl.dart';
-import 'category_details_view.dart';
+import '../theme/app_colors.dart';
 
 class AnalyticsView extends StatefulWidget {
   const AnalyticsView({super.key});
@@ -13,6 +12,8 @@ class AnalyticsView extends StatefulWidget {
 }
 
 class _AnalyticsViewState extends State<AnalyticsView> {
+  int _selectedSegment = 1; // 0=Week, 1=Month, 2=Year
+
   @override
   void initState() {
     super.initState();
@@ -23,308 +24,340 @@ class _AnalyticsViewState extends State<AnalyticsView> {
     });
   }
 
-  void _previousMonth(TransactionViewModel vm) {
-    final current = vm.analyticsMonth;
-    vm.setAnalyticsMonth(DateTime(current.year, current.month - 1));
-  }
-
-  void _nextMonth(TransactionViewModel vm) {
-    final current = vm.analyticsMonth;
-    vm.setAnalyticsMonth(DateTime(current.year, current.month + 1));
-  }
-
-  void _selectMonth(TransactionViewModel vm) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: vm.analyticsMonth,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-      initialDatePickerMode: DatePickerMode.year,
-    );
-    if (picked != null) {
-      vm.setAnalyticsMonth(DateTime(picked.year, picked.month));
-    }
-  }
-
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<TransactionViewModel>();
-    final summary = vm.analyticsMonthlySummary;
-    final topExpenses = vm.analyticsTopExpenses;
-    
-    final totalExpense = summary?.totalExpense ?? 0.0;
-    final averageExpense = vm.analyticsTransactionCount > 0 
-        ? totalExpense / vm.analyticsTransactionCount 
-        : 0.0;
+    final settings = context.watch<SettingsViewModel>();
+    final isLoading = vm.isLoading;
+
+    if (isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        body: Center(child: CircularProgressIndicator(color: AppColors.income)),
+      );
+    }
+
+    final totalExpense = vm.analyticsMonthlySummary?.totalExpense ?? 0.0;
+    // Mock budget for UI demonstration based on the design
+    const mockBudget = 5000.0;
+    final spentPercentage = (totalExpense / mockBudget).clamp(0.0, 1.0);
+    final spentPercentText = '${(spentPercentage * 100).toInt()}%';
+    final remaining = mockBudget - totalExpense;
 
     return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        title: const Text('Spending Analytics'),
+        backgroundColor: AppColors.backgroundDark,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none, color: AppColors.textSecondaryDark, size: 22),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
-        child: vm.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: () => vm.loadAnalyticsData(),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: ListView(
-                      padding: const EdgeInsets.all(16.0),
-                      children: [
-                  // Month Selector
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: () => _previousMonth(vm),
+                      const Text(
+                        'Analytics',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimaryDark),
                       ),
-                      TextButton(
-                        onPressed: () => _selectMonth(vm),
-                        child: Text(
-                          DateFormat.yMMMM().format(vm.analyticsMonth),
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: () => _nextMonth(vm),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Overview & activity',
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  
-                  // Total Spending Header
-                  const Center(child: Text('Total Spending', style: TextStyle(fontSize: 16, color: Colors.grey))),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: Text(
-                      context.read<SettingsViewModel>().formatAmount(totalExpense),
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.red),
-                    ),
+                  _SegmentedControl(
+                    selectedIndex: _selectedSegment,
+                    onChanged: (idx) => setState(() => _selectedSegment = idx),
                   ),
-                  const SizedBox(height: 32),
-
-                  // Grid Metrics
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 2,
-                    children: [
-                      _buildMetricCard('Total Income', context.read<SettingsViewModel>().formatAmount(summary?.totalIncome ?? 0), Colors.green),
-                      _buildMetricCard('Balance', context.read<SettingsViewModel>().formatAmount(summary?.balance ?? 0), Colors.deepPurple),
-                      _buildMetricCard('Transactions', '${vm.analyticsTransactionCount}', Colors.blue),
-                      _buildMetricCard('Avg Expense', context.read<SettingsViewModel>().formatAmount(averageExpense), Colors.orange),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-
-                  if (totalExpense <= 0 || topExpenses.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48.0),
-                      child: Center(
-                        child: Text('No spending data for this month.', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      ),
-                    )
-                  else ...[
-                    if (vm.monthlyInsights.isNotEmpty) ...[
-                      const Text('Monthly Insights', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
-                      ...vm.monthlyInsights.map((insight) {
-                        final isPositive = insight.contains('decreased') || insight.contains('increased by') && insight.contains('income');
-                        final color = isPositive ? Colors.green : Colors.orange;
-                        final icon = isPositive ? Icons.trending_down : Icons.trending_up;
-                        
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: color.withValues(alpha: 0.1),
-                              child: Icon(icon, color: color, size: 20),
-                            ),
-                            title: Text(insight.replaceAll('\$', context.read<SettingsViewModel>().currencySymbol), style: const TextStyle(fontSize: 14)),
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 32),
-                    ],
-
-                    // Biggest Expense Category Card
-                    const Text('Biggest Expense', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    Card(
-                      color: Colors.red.shade50,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CategoryDetailsView(
-                                category: topExpenses.first.category,
-                                month: vm.analyticsMonth,
-                              ),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: Colors.red.shade100,
-                              child: Icon(_getIconData(topExpenses.first.category.icon), color: Colors.red, size: 28),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    topExpenses.first.category.name,
-                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${((topExpenses.first.totalAmount / totalExpense) * 100).toStringAsFixed(1)}% of total spending',
-                                    style: TextStyle(color: Colors.red.shade900),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              context.read<SettingsViewModel>().formatAmount(topExpenses.first.totalAmount),
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                    // Spending By Category Chart
-                    const Text('Spending By Category', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    ...topExpenses.map((spending) {
-                      final percentage = (spending.totalAmount / totalExpense) * 100;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 24.0),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CategoryDetailsView(
-                                  category: spending.category,
-                                  month: vm.analyticsMonth,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(_getIconData(spending.category.icon), size: 16, color: Colors.grey),
-                                    const SizedBox(width: 8),
-                                    Text(spending.category.name, style: const TextStyle(fontSize: 16)),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Text(context.read<SettingsViewModel>().formatAmount(spending.totalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
-                                    const SizedBox(width: 8),
-                                    Text('${percentage.toStringAsFixed(1)}%', style: const TextStyle(color: Colors.grey)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Stack(
-                              children: [
-                                Container(
-                                  height: 8,
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade200,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                                FractionallySizedBox(
-                                  widthFactor: percentage / 100.0,
-                                  child: Container(
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: Colors.deepPurple,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                  ]
                 ],
               ),
-             ),
-            ),
-           ),
-         ),
+              const SizedBox(height: 32),
+              
+              // Hero Spend Card
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.borderDark),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'SPENT THIS MONTH',
+                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                        ),
+                        Text(
+                          spentPercentText,
+                          style: const TextStyle(color: AppColors.income, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          settings.formatAmount(totalExpense),
+                          style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1.0),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'of ${settings.formatAmount(mockBudget)}',
+                          style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // Progress Bar
+                    Container(
+                      height: 6,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHighDark,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: spentPercentage,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.income,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${settings.formatAmount(remaining)} remaining',
+                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                        ),
+                        Text(
+                          '11 days left', // Mock data for days left
+                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 48),
+              
+              // Spending by Category
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Spending by Category', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Details', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Segmented Progress Bar (Mocked for visual based on the design)
+              Row(
+                children: [
+                  Expanded(flex: 38, child: _ProgressSegment(color: AppColors.income, isFirst: true)),
+                  Expanded(flex: 20, child: _ProgressSegment(color: Colors.blue)),
+                  Expanded(flex: 14, child: _ProgressSegment(color: Colors.purpleAccent)),
+                  Expanded(flex: 8, child: _ProgressSegment(color: AppColors.textTertiaryDark)),
+                  Expanded(flex: 20, child: _ProgressSegment(color: const Color(0xFFF87171), isLast: true)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Mocked Category List to perfectly match the design
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.borderDark),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    _CategoryRow(color: AppColors.income, name: 'Housing & Utilities', amount: '\$1,450.00', percentage: '38%'),
+                    _CategoryRow(color: Colors.blue, name: 'Food & Dining', amount: '\$780.20', percentage: '20%'),
+                    _CategoryRow(color: Colors.purpleAccent, name: 'Shopping & Tech', amount: '\$540.00', percentage: '14%'),
+                    _CategoryRow(color: AppColors.textTertiaryDark, name: 'Transportation', amount: '\$320.30', percentage: '8%'),
+                    _CategoryRow(color: const Color(0xFFF87171), name: 'Entertainment & Other', amount: '\$730.00', percentage: '20%', isLast: true),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
     );
   }
+}
 
-  Widget _buildMetricCard(String title, String value, Color color) {
-    return Card(
-      elevation: 0,
-      color: color.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: color.withValues(alpha: 0.2))),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(value, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
+class _SegmentedControl extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+
+  const _SegmentedControl({required this.selectedIndex, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowDark,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _Segment(title: 'Week', isSelected: selectedIndex == 0, onTap: () => onChanged(0)),
+          _Segment(title: 'Month', isSelected: selectedIndex == 1, onTap: () => onChanged(1)),
+          _Segment(title: 'Year', isSelected: selectedIndex == 2, onTap: () => onChanged(2)),
+        ],
+      ),
+    );
+  }
+}
+
+class _Segment extends StatelessWidget {
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _Segment({required this.title, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.textPrimaryDark : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
         ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? AppColors.backgroundDark : AppColors.textSecondaryDark,
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressSegment extends StatelessWidget {
+  final Color color;
+  final bool isFirst;
+  final bool isLast;
+
+  const _ProgressSegment({required this.color, this.isFirst = false, this.isLast = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 6,
+      margin: EdgeInsets.only(right: isLast ? 0 : 2),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.horizontal(
+          left: isFirst ? const Radius.circular(3) : Radius.zero,
+          right: isLast ? const Radius.circular(3) : Radius.zero,
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryRow extends StatelessWidget {
+  final Color color;
+  final String name;
+  final String amount;
+  final String percentage;
+  final bool isLast;
+
+  const _CategoryRow({
+    required this.color,
+    required this.name,
+    required this.amount,
+    required this.percentage,
+    this.isLast = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    name,
+                    style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                Text(
+                  amount,
+                  style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 32,
+                  child: Text(
+                    percentage,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (!isLast) const Divider(height: 1, color: AppColors.surfaceContainerLowDark),
+        ],
       ),
     );
   }

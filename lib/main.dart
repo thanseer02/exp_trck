@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'viewmodels/transaction_viewmodel.dart';
 import 'viewmodels/category_viewmodel.dart';
 import 'viewmodels/settings_viewmodel.dart';
-import 'views/main_navigation_view.dart';
+import 'views/dashboard_view.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/category_repository.dart';
@@ -52,9 +52,9 @@ class ExpenseTrackerApp extends StatelessWidget {
         return MaterialApp(
           title: 'Vault',
           themeMode: ThemeMode.dark,
-          theme: AppTheme.darkTheme, // Force dark theme as the default
+          theme: AppTheme.darkTheme,
           darkTheme: AppTheme.darkTheme,
-          home: const MainNavigationView(),
+          home: const DashboardView(),
         );
       },
     );

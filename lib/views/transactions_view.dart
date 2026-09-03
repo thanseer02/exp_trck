@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../viewmodels/settings_viewmodel.dart';
+import '../viewmodels/category_viewmodel.dart';
 import '../models/transaction.dart';
 import '../models/transaction_type.dart';
+import '../models/category.dart';
+import '../theme/app_colors.dart';
 import 'add_edit_transaction_view.dart';
-import 'package:intl/intl.dart';
 
 class TransactionsView extends StatefulWidget {
   const TransactionsView({super.key});
@@ -20,10 +23,11 @@ class _TransactionsViewState extends State<TransactionsView> {
   @override
   void initState() {
     super.initState();
-    final vm = context.read<TransactionViewModel>();
-    _searchController.text = vm.searchQuery;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      vm.loadTransactions();
+      if (mounted) {
+        context.read<TransactionViewModel>().loadTransactions();
+        context.read<CategoryViewModel>().loadCategories();
+      }
     });
   }
 
@@ -33,261 +37,290 @@ class _TransactionsViewState extends State<TransactionsView> {
     super.dispose();
   }
 
-  void _showSortOptions(BuildContext context, TransactionViewModel vm) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: TransactionSortOption.values.map((sort) {
-            String label;
-            switch (sort) {
-              case TransactionSortOption.newest: label = 'Newest First'; break;
-              case TransactionSortOption.oldest: label = 'Oldest First'; break;
-              case TransactionSortOption.highestAmount: label = 'Highest Amount'; break;
-              case TransactionSortOption.lowestAmount: label = 'Lowest Amount'; break;
-            }
-            return ListTile(
-              title: Text(label),
-              trailing: vm.currentSort == sort ? const Icon(Icons.check) : null,
-              onTap: () {
-                vm.setSortOption(sort);
-                Navigator.pop(ctx);
-              },
-            );
-          }).toList(),
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<TransactionViewModel>();
+    final isLoading = vm.isLoading;
+
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundDark,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Ledger', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: AppColors.textPrimaryDark, size: 22),
+            onPressed: () {
+              // Toggle search bar visibility in future iteration
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary, // Green FlowLedger action
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddEditTransactionView(),
+            ),
+          );
+          if (result == true && mounted) {
+            context.read<TransactionViewModel>().loadTransactions();
+          }
+        },
+        child: const Icon(Icons.add, color: AppColors.backgroundDark),
+      ),
+      body: SafeArea(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator(color: AppColors.income))
+            : RefreshIndicator(
+                onRefresh: () => vm.loadTransactions(),
+                color: AppColors.income,
+                backgroundColor: AppColors.surfaceDark,
+                child: Column(
+                  children: [
+                    _FilterChipsSection(vm: vm),
+                    Expanded(
+                      child: vm.transactions.isEmpty
+                          ? _buildEmptyState()
+                          : _buildTransactionList(vm),
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.receipt_long, size: 64, color: AppColors.surfaceContainerHighDark),
+          const SizedBox(height: 16),
+          Text(
+            'No transactions found.',
+            style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionList(TransactionViewModel vm) {
+    // Group transactions by date
+    final groupedTransactions = <String, List<Transaction>>{};
+    
+    for (var tx in vm.transactions) {
+      final dateKey = DateFormat('yyyy-MM-dd').format(tx.date.toLocal());
+      if (!groupedTransactions.containsKey(dateKey)) {
+        groupedTransactions[dateKey] = [];
+      }
+      groupedTransactions[dateKey]!.add(tx);
+    }
+    
+    final sortedKeys = groupedTransactions.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      itemCount: sortedKeys.length,
+      itemBuilder: (context, index) {
+        final dateKey = sortedKeys[index];
+        final transactionsForDate = groupedTransactions[dateKey]!;
+        final date = DateTime.parse(dateKey);
+        
+        final now = DateTime.now();
+        final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+        final isYesterday = date.year == now.year && date.month == now.month && date.day == now.day - 1;
+        
+        String displayDate = DateFormat('MMMM d, yyyy').format(date);
+        if (isToday) displayDate = 'TODAY';
+        else if (isYesterday) displayDate = 'YESTERDAY';
+        else displayDate = displayDate.toUpperCase();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Text(
+                displayDate,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
+                  color: AppColors.textTertiaryDark,
+                ),
+              ),
+            ),
+            ...transactionsForDate.map((tx) => _TransactionTile(tx: tx, vm: vm)).toList(),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _FilterChipsSection extends StatelessWidget {
+  final TransactionViewModel vm;
+
+  const _FilterChipsSection({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        children: [
+          _buildFilterChip('All', null, vm),
+          const SizedBox(width: 8),
+          _buildFilterChip('Income', TransactionType.income, vm),
+          const SizedBox(width: 8),
+          _buildFilterChip('Expense', TransactionType.expense, vm),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, TransactionType? type, TransactionViewModel vm) {
+    final isSelected = vm.filterType == type;
+    return GestureDetector(
+      onTap: () {
+        vm.setFilterType(type);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.textPrimaryDark : AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AppColors.textPrimaryDark : AppColors.borderDark),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? AppColors.backgroundDark : AppColors.textSecondaryDark,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
         ),
       ),
     );
   }
+}
 
-  Future<void> _pickDateFilter(BuildContext context, TransactionViewModel vm) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: vm.filterDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null) {
-      vm.setFilterDate(picked);
+class _TransactionTile extends StatelessWidget {
+  final Transaction tx;
+  final TransactionViewModel vm;
+
+  const _TransactionTile({required this.tx, required this.vm});
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'restaurant': return Icons.restaurant;
+      case 'directions_car': return Icons.directions_car;
+      case 'shopping_cart': return Icons.shopping_cart;
+      case 'receipt': return Icons.receipt;
+      case 'home': return Icons.home;
+      case 'movie': return Icons.movie;
+      case 'local_hospital': return Icons.local_hospital;
+      case 'school': return Icons.school;
+      case 'flight': return Icons.flight;
+      case 'local_grocery_store': return Icons.local_grocery_store;
+      case 'subscriptions': return Icons.subscriptions;
+      case 'attach_money': return Icons.attach_money;
+      case 'work': return Icons.work;
+      case 'business': return Icons.business;
+      case 'card_giftcard': return Icons.card_giftcard;
+      case 'category': 
+      default: return Icons.category_outlined;
     }
-  }
-
-  Map<String, List<Transaction>> _groupTransactions(List<Transaction> transactions) {
-    final Map<String, List<Transaction>> groups = {};
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-
-    for (final tx in transactions) {
-      final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
-      String key;
-      if (txDate == today) {
-        key = 'Today';
-      } else if (txDate == yesterday) {
-        key = 'Yesterday';
-      } else {
-        key = DateFormat.yMMMd().format(txDate);
-      }
-
-      if (!groups.containsKey(key)) {
-        groups[key] = [];
-      }
-      groups[key]!.add(tx);
-    }
-    return groups;
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<TransactionViewModel>();
-    final filteredTx = vm.filteredTransactions;
-    final groupedTx = _groupTransactions(filteredTx);
+    final isIncome = tx.type == TransactionType.income;
+    final categoryVm = context.read<CategoryViewModel>();
+    final categories = isIncome ? categoryVm.incomeCategories : categoryVm.expenseCategories;
+    final category = categories.firstWhere(
+      (c) => c.id == tx.categoryId,
+      orElse: () => Category(id: -1, name: 'Unknown', icon: 'category', type: tx.type),
+    );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transactions'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sort),
-            onPressed: () => _showSortOptions(context, vm),
+    return InkWell(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddEditTransactionView(transaction: tx),
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Column(
-              children: [
-                // Search Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search notes...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          vm.setSearchQuery('');
-                        },
-                      )
-                    : null,
+        );
+        if (result == true) {
+          vm.loadTransactions();
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 24.0),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceContainerLowDark,
+                shape: BoxShape.circle,
               ),
-              onChanged: (val) => vm.setSearchQuery(val),
+              child: Icon(
+                _getIconData(category.icon), 
+                color: AppColors.textSecondaryDark,
+                size: 18,
+              ),
             ),
-          ),
-          
-          // Filters
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                FilterChip(
-                  label: const Text('All'),
-                  selected: vm.filterType == null,
-                  onSelected: (_) => vm.setFilterType(null),
-                ),
-                const SizedBox(width: 8),
-                FilterChip(
-                  label: const Text('Income'),
-                  selected: vm.filterType == TransactionType.income,
-                  onSelected: (_) => vm.setFilterType(TransactionType.income),
-                ),
-                const SizedBox(width: 8),
-                FilterChip(
-                  label: const Text('Expense'),
-                  selected: vm.filterType == TransactionType.expense,
-                  onSelected: (_) => vm.setFilterType(TransactionType.expense),
-                ),
-                const SizedBox(width: 8),
-                ActionChip(
-                  label: Text(vm.filterDate != null ? DateFormat.yMMMd().format(vm.filterDate!) : 'Date'),
-                  avatar: const Icon(Icons.calendar_today, size: 16),
-                  onPressed: () => _pickDateFilter(context, vm),
-                ),
-                if (vm.filterDate != null || vm.filterType != null || _searchController.text.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  ActionChip(
-                    label: const Text('Clear All'),
-                    avatar: const Icon(Icons.clear, size: 16),
-                    onPressed: () {
-                      _searchController.clear();
-                      vm.clearFilters();
-                    },
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name,
+                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: AppColors.textPrimaryDark),
                   ),
-                ]
+                  const SizedBox(height: 4),
+                  Text(
+                    '${category.name} • ${DateFormat('h:mm a').format(tx.date.toLocal())}',
+                    style: const TextStyle(color: AppColors.textTertiaryDark, fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: isIncome ? AppColors.income : const Color(0xFFF87171), 
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  isIncome ? 'CLEARED' : 'CARD',
+                  style: TextStyle(fontSize: 8, color: AppColors.textTertiaryDark, letterSpacing: 1.0, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
-          ),
-          const Divider(),
-
-          // Transactions List
-          Expanded(
-            child: vm.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredTx.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.receipt_long, size: 64, color: Colors.grey.shade400),
-                            const SizedBox(height: 16),
-                            const Text('No transactions found.', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                            const SizedBox(height: 8),
-                            const Text('Tap + to add your first transaction.', style: TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: groupedTx.length,
-                        itemBuilder: (context, index) {
-                          final key = groupedTx.keys.elementAt(index);
-                          final transactions = groupedTx[key]!;
-                          
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
-                                child: Text(
-                                  key,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),
-                                ),
-                              ),
-                              ...transactions.map((tx) {
-                                final isIncome = tx.type == TransactionType.income;
-                                  return Dismissible(
-                                    key: Key('tx_${tx.id}'),
-                                    direction: DismissDirection.endToStart,
-                                    background: Container(
-                                      color: Colors.red,
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.only(right: 16),
-                                      child: const Icon(Icons.delete, color: Colors.white),
-                                    ),
-                                    onDismissed: (direction) async {
-                                      final vm = context.read<TransactionViewModel>();
-                                      await vm.deleteTransaction(tx.id!);
-                                      
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: const Text('Transaction deleted'),
-                                            action: SnackBarAction(
-                                              label: 'UNDO',
-                                              onPressed: () async {
-                                                await vm.addTransaction(tx);
-                                              },
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    child: ListTile(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => AddEditTransactionView(transaction: tx),
-                                          ),
-                                        );
-                                      },
-                                      leading: CircleAvatar(
-                                        backgroundColor: isIncome ? Colors.green.shade100 : Colors.red.shade100,
-                                        child: Icon(
-                                          isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                                          color: isIncome ? Colors.green : Colors.red,
-                                        ),
-                                      ),
-                                      title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : tx.type.name.toUpperCase()),
-                                      subtitle: Text(tx.date.toLocal().toString().split(' ')[0]),
-                                      trailing: Text(
-                                        '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: isIncome ? Colors.green : Colors.red,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                              }),
-                            ],
-                          );
-                        },
-                      ),
-          ),
           ],
-            ),
-          ),
         ),
       ),
     );
