@@ -79,19 +79,19 @@ class AppStyles {
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimaryDark,
   );
-  
+
   static const TextStyle amountIncomeLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
     color: AppColors.income,
   );
-  
+
   static const TextStyle amountExpenseLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimaryDark,
   );
-  
+
   // Destructive text
   static const TextStyle destructive = TextStyle(
     fontSize: 14,

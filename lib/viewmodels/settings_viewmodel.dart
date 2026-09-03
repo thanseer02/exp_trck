@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   final SharedPreferences _prefs;
-  
+
   static const String _currencyKey = 'currency_symbol';
   static const String _themeModeKey = 'theme_mode';
   static const String _userNameKey = 'user_name';
@@ -21,7 +21,7 @@ class SettingsViewModel extends ChangeNotifier {
   String get currencySymbol => _currencySymbol;
   ThemeMode get themeMode => _themeMode;
   String get userName => _userName;
-  
+
   String formatAmount(double amount) {
     final format = NumberFormat.currency(
       locale: 'en_IN',
@@ -33,14 +33,16 @@ class SettingsViewModel extends ChangeNotifier {
 
   void _loadSettings() {
     _currencySymbol = _prefs.getString(_currencyKey) ?? '₹';
-    
+
     final themeIndex = _prefs.getInt(_themeModeKey);
-    if (themeIndex != null && themeIndex >= 0 && themeIndex < ThemeMode.values.length) {
+    if (themeIndex != null &&
+        themeIndex >= 0 &&
+        themeIndex < ThemeMode.values.length) {
       _themeMode = ThemeMode.values[themeIndex];
     } else {
       _themeMode = ThemeMode.system;
     }
-    
+
     _userName = _prefs.getString(_userNameKey) ?? 'Boss';
     notifyListeners();
   }

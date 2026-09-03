@@ -46,27 +46,27 @@ class Transaction {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is Transaction &&
-      other.id == id &&
-      other.type == type &&
-      other.amount == amount &&
-      other.categoryId == categoryId &&
-      other.note == note &&
-      other.date == date &&
-      other.createdAt == createdAt &&
-      other.updatedAt == updatedAt;
+        other.id == id &&
+        other.type == type &&
+        other.amount == amount &&
+        other.categoryId == categoryId &&
+        other.note == note &&
+        other.date == date &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      type.hashCode ^
-      amount.hashCode ^
-      categoryId.hashCode ^
-      note.hashCode ^
-      date.hashCode ^
-      createdAt.hashCode ^
-      updatedAt.hashCode;
+        type.hashCode ^
+        amount.hashCode ^
+        categoryId.hashCode ^
+        note.hashCode ^
+        date.hashCode ^
+        createdAt.hashCode ^
+        updatedAt.hashCode;
   }
 }

@@ -1,7 +1,4 @@
-enum TransactionType {
-  income,
-  expense,
-}
+enum TransactionType { income, expense }
 
 extension TransactionTypeExtension on TransactionType {
   String get name {

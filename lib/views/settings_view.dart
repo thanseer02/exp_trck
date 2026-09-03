@@ -26,8 +26,12 @@ class SettingsView extends StatelessWidget {
             decoration: const InputDecoration(
               hintText: 'Enter your name',
               hintStyle: AppStyles.bodySecondary,
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.borderDark)),
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary)),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderDark),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary),
+              ),
             ),
             onChanged: (val) {
               input = val;
@@ -39,7 +43,10 @@ class SettingsView extends StatelessWidget {
               child: const Text('Cancel', style: AppStyles.bodySecondary),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.backgroundDark),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.backgroundDark,
+              ),
               onPressed: () {
                 vm.setUserName(input);
                 Navigator.pop(context);
@@ -62,10 +69,26 @@ class SettingsView extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDialogListTile(context, 'INR (₹)', () => vm.setCurrencySymbol('₹')),
-              _buildDialogListTile(context, 'USD (\$)', () => vm.setCurrencySymbol('\$')),
-              _buildDialogListTile(context, 'EUR (€)', () => vm.setCurrencySymbol('€')),
-              _buildDialogListTile(context, 'GBP (£)', () => vm.setCurrencySymbol('£')),
+              _buildDialogListTile(
+                context,
+                'INR (₹)',
+                () => vm.setCurrencySymbol('₹'),
+              ),
+              _buildDialogListTile(
+                context,
+                'USD (\$)',
+                () => vm.setCurrencySymbol('\$'),
+              ),
+              _buildDialogListTile(
+                context,
+                'EUR (€)',
+                () => vm.setCurrencySymbol('€'),
+              ),
+              _buildDialogListTile(
+                context,
+                'GBP (£)',
+                () => vm.setCurrencySymbol('£'),
+              ),
             ],
           ),
         );
@@ -83,9 +106,21 @@ class SettingsView extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDialogListTile(context, 'System Default', () => vm.setThemeMode(ThemeMode.system)),
-              _buildDialogListTile(context, 'Light', () => vm.setThemeMode(ThemeMode.light)),
-              _buildDialogListTile(context, 'Dark', () => vm.setThemeMode(ThemeMode.dark)),
+              _buildDialogListTile(
+                context,
+                'System Default',
+                () => vm.setThemeMode(ThemeMode.system),
+              ),
+              _buildDialogListTile(
+                context,
+                'Light',
+                () => vm.setThemeMode(ThemeMode.light),
+              ),
+              _buildDialogListTile(
+                context,
+                'Dark',
+                () => vm.setThemeMode(ThemeMode.dark),
+              ),
             ],
           ),
         );
@@ -93,7 +128,11 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  ListTile _buildDialogListTile(BuildContext context, String title, VoidCallback onTap) {
+  ListTile _buildDialogListTile(
+    BuildContext context,
+    String title,
+    VoidCallback onTap,
+  ) {
     return ListTile(
       title: Text(title, style: AppStyles.bodySecondary),
       onTap: () {
@@ -113,29 +152,45 @@ class SettingsView extends StatelessWidget {
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: AppColors.surfaceDark,
-              title: const Text('Delete All Data', style: AppStyles.destructive),
+              title: const Text(
+                'Delete All Data',
+                style: AppStyles.destructive,
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('This action is irreversible and will permanently delete all your transactions. Default categories will be restored.', style: AppStyles.bodySecondary),
+                  const Text(
+                    'This action is irreversible and will permanently delete all your transactions. Default categories will be restored.',
+                    style: AppStyles.bodySecondary,
+                  ),
                   const SizedBox(height: 16),
-                  const Text('Type "DELETE" to confirm:', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimaryDark)),
+                  const Text(
+                    'Type "DELETE" to confirm:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimaryDark,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextField(
                     onChanged: (val) {
                       setState(() {
-                         input = val;
+                        input = val;
                       });
                     },
                     style: AppStyles.bodyPrimary,
                     decoration: const InputDecoration(
-                      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.borderDark)),
-                      focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFFF87171))),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.borderDark),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFF87171)),
+                      ),
                       hintText: 'DELETE',
                       hintStyle: AppStyles.caption,
                     ),
-                  )
+                  ),
                 ],
               ),
               actions: [
@@ -144,39 +199,50 @@ class SettingsView extends StatelessWidget {
                   child: const Text('Cancel', style: AppStyles.bodySecondary),
                 ),
                 ElevatedButton(
-                  onPressed: input == 'DELETE' ? () => Navigator.pop(context, true) : null,
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF87171), foregroundColor: AppColors.backgroundDark),
+                  onPressed: input == 'DELETE'
+                      ? () => Navigator.pop(context, true)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF87171),
+                    foregroundColor: AppColors.backgroundDark,
+                  ),
                   child: const Text('Delete Permanently'),
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
 
     if (confirmed == true && context.mounted) {
       try {
         final repo = context.read<TransactionRepository>();
         await repo.wipeData();
-        
+
         if (context.mounted) {
           await context.read<CategoryViewModel>().loadCategories();
           if (!context.mounted) return;
           await context.read<TransactionViewModel>().loadTransactions();
           if (!context.mounted) return;
           await context.read<TransactionViewModel>().loadDashboardData();
-          
+
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('All data deleted successfully.'), backgroundColor: AppColors.primary),
+              const SnackBar(
+                content: Text('All data deleted successfully.'),
+                backgroundColor: AppColors.primary,
+              ),
             );
           }
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting data: $e'), backgroundColor: const Color(0xFFF87171)),
+            SnackBar(
+              content: Text('Error deleting data: $e'),
+              backgroundColor: const Color(0xFFF87171),
+            ),
           );
         }
       }
@@ -185,7 +251,10 @@ class SettingsView extends StatelessWidget {
 
   void _showNotImplemented(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Not implemented yet.'), backgroundColor: AppColors.surfaceContainerHighDark),
+      const SnackBar(
+        content: Text('Not implemented yet.'),
+        backgroundColor: AppColors.surfaceContainerHighDark,
+      ),
     );
   }
 
@@ -199,8 +268,8 @@ class SettingsView extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(top: 16.0),
           child: Text('A clean, offline-first personal finance application.'),
-        )
-      ]
+        ),
+      ],
     );
   }
 
@@ -214,7 +283,11 @@ class SettingsView extends StatelessWidget {
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimaryDark,
+            size: 22,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Settings', style: AppStyles.appBarTitle),
@@ -244,9 +317,14 @@ class SettingsView extends StatelessWidget {
                   subtitle: settingsVM.themeMode.name.toUpperCase(),
                   onTap: () => _showThemePicker(context, settingsVM),
                 ),
-                
-                const Divider(color: AppColors.borderDark, indent: 24, endIndent: 24, height: 32),
-                
+
+                const Divider(
+                  color: AppColors.borderDark,
+                  indent: 24,
+                  endIndent: 24,
+                  height: 32,
+                ),
+
                 _buildSectionHeader('Categories'),
                 _buildSettingsTile(
                   icon: Icons.category_outlined,
@@ -256,9 +334,14 @@ class SettingsView extends StatelessWidget {
                     Navigator.pushNamed(context, AppRoutes.manageCategories);
                   },
                 ),
-                
-                const Divider(color: AppColors.borderDark, indent: 24, endIndent: 24, height: 32),
-                
+
+                const Divider(
+                  color: AppColors.borderDark,
+                  indent: 24,
+                  endIndent: 24,
+                  height: 32,
+                ),
+
                 _buildSectionHeader('Data'),
                 _buildSettingsTile(
                   icon: Icons.file_upload_outlined,
@@ -276,9 +359,14 @@ class SettingsView extends StatelessWidget {
                   isDestructive: true,
                   onTap: () => _confirmDeleteAllData(context),
                 ),
-                
-                const Divider(color: AppColors.borderDark, indent: 24, endIndent: 24, height: 32),
-                
+
+                const Divider(
+                  color: AppColors.borderDark,
+                  indent: 24,
+                  endIndent: 24,
+                  height: 32,
+                ),
+
                 _buildSectionHeader('About'),
                 _buildSettingsTile(
                   icon: Icons.info_outline,
@@ -297,10 +385,7 @@ class SettingsView extends StatelessWidget {
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-      child: Text(
-        title.toUpperCase(),
-        style: AppStyles.sectionHeader,
-      ),
+      child: Text(title.toUpperCase(), style: AppStyles.sectionHeader),
     );
   }
 
@@ -311,9 +396,13 @@ class SettingsView extends StatelessWidget {
     bool isDestructive = false,
     required VoidCallback onTap,
   }) {
-    final color = isDestructive ? const Color(0xFFF87171) : AppColors.textPrimaryDark;
-    final iconColor = isDestructive ? const Color(0xFFF87171) : AppColors.textSecondaryDark;
-    
+    final color = isDestructive
+        ? const Color(0xFFF87171)
+        : AppColors.textPrimaryDark;
+    final iconColor = isDestructive
+        ? const Color(0xFFF87171)
+        : AppColors.textSecondaryDark;
+
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       leading: Container(

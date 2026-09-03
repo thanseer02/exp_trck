@@ -13,7 +13,11 @@ class TransferView extends StatelessWidget {
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textPrimaryDark, size: 24),
+          icon: const Icon(
+            Icons.close,
+            color: AppColors.textPrimaryDark,
+            size: 24,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Transfer', style: AppStyles.appBarTitle),
@@ -34,7 +38,11 @@ class TransferView extends StatelessWidget {
                   border: Border.all(color: AppColors.borderDark, width: 2),
                 ),
                 child: const Center(
-                  child: Icon(Icons.swap_horiz, color: AppColors.textSecondaryDark, size: 40),
+                  child: Icon(
+                    Icons.swap_horiz,
+                    color: AppColors.textSecondaryDark,
+                    size: 40,
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -65,9 +73,18 @@ class TransferView extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: const Text('Got it', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Got it',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],

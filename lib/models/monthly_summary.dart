@@ -28,19 +28,19 @@ class MonthlySummary {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is MonthlySummary &&
-      other.totalIncome == totalIncome &&
-      other.totalExpense == totalExpense &&
-      other.balance == balance &&
-      other.month == month;
+        other.totalIncome == totalIncome &&
+        other.totalExpense == totalExpense &&
+        other.balance == balance &&
+        other.month == month;
   }
 
   @override
   int get hashCode {
     return totalIncome.hashCode ^
-      totalExpense.hashCode ^
-      balance.hashCode ^
-      month.hashCode;
+        totalExpense.hashCode ^
+        balance.hashCode ^
+        month.hashCode;
   }
 }

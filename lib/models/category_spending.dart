@@ -4,15 +4,9 @@ class CategorySpending {
   final Category category;
   final double totalAmount;
 
-  const CategorySpending({
-    required this.category,
-    required this.totalAmount,
-  });
+  const CategorySpending({required this.category, required this.totalAmount});
 
-  CategorySpending copyWith({
-    Category? category,
-    double? totalAmount,
-  }) {
+  CategorySpending copyWith({Category? category, double? totalAmount}) {
     return CategorySpending(
       category: category ?? this.category,
       totalAmount: totalAmount ?? this.totalAmount,
@@ -22,10 +16,10 @@ class CategorySpending {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is CategorySpending &&
-      other.category == category &&
-      other.totalAmount == totalAmount;
+        other.category == category &&
+        other.totalAmount == totalAmount;
   }
 
   @override

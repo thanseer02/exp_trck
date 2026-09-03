@@ -38,23 +38,23 @@ class Category {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is Category &&
-      other.id == id &&
-      other.name == name &&
-      other.icon == icon &&
-      other.type == type &&
-      other.isDefault == isDefault &&
-      other.createdAt == createdAt;
+        other.id == id &&
+        other.name == name &&
+        other.icon == icon &&
+        other.type == type &&
+        other.isDefault == isDefault &&
+        other.createdAt == createdAt;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      name.hashCode ^
-      icon.hashCode ^
-      type.hashCode ^
-      isDefault.hashCode ^
-      createdAt.hashCode;
+        name.hashCode ^
+        icon.hashCode ^
+        type.hashCode ^
+        isDefault.hashCode ^
+        createdAt.hashCode;
   }
 }

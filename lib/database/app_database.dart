@@ -19,29 +19,114 @@ class AppDatabase extends _$AppDatabase {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
-        
+
         // Pre-populate default categories
         final defaultCategories = [
           // Expense Categories
-          CategoriesCompanion.insert(name: 'Food', icon: 'restaurant', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Transport', icon: 'directions_car', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Shopping', icon: 'shopping_cart', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Bills', icon: 'receipt', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Rent', icon: 'home', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Entertainment', icon: 'movie', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Health', icon: 'local_hospital', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Education', icon: 'school', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Travel', icon: 'flight', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Groceries', icon: 'local_grocery_store', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Subscriptions', icon: 'subscriptions', type: 'expense', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Other', icon: 'category', type: 'expense', isDefault: const Value(true)),
-          
+          CategoriesCompanion.insert(
+            name: 'Food',
+            icon: 'restaurant',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Transport',
+            icon: 'directions_car',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Shopping',
+            icon: 'shopping_cart',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Bills',
+            icon: 'receipt',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Rent',
+            icon: 'home',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Entertainment',
+            icon: 'movie',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Health',
+            icon: 'local_hospital',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Education',
+            icon: 'school',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Travel',
+            icon: 'flight',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Groceries',
+            icon: 'local_grocery_store',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Subscriptions',
+            icon: 'subscriptions',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Other',
+            icon: 'category',
+            type: 'expense',
+            isDefault: const Value(true),
+          ),
+
           // Income Categories
-          CategoriesCompanion.insert(name: 'Salary', icon: 'attach_money', type: 'income', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Freelance', icon: 'work', type: 'income', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Business', icon: 'business', type: 'income', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Gift', icon: 'card_giftcard', type: 'income', isDefault: const Value(true)),
-          CategoriesCompanion.insert(name: 'Other', icon: 'category', type: 'income', isDefault: const Value(true)),
+          CategoriesCompanion.insert(
+            name: 'Salary',
+            icon: 'attach_money',
+            type: 'income',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Freelance',
+            icon: 'work',
+            type: 'income',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Business',
+            icon: 'business',
+            type: 'income',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Gift',
+            icon: 'card_giftcard',
+            type: 'income',
+            isDefault: const Value(true),
+          ),
+          CategoriesCompanion.insert(
+            name: 'Other',
+            icon: 'category',
+            type: 'income',
+            isDefault: const Value(true),
+          ),
         ];
 
         for (final category in defaultCategories) {
@@ -54,28 +139,113 @@ class AppDatabase extends _$AppDatabase {
   Future<void> wipeData() async {
     await delete(transactions).go();
     await delete(categories).go();
-    
+
     final defaultCategories = [
       // Expense Categories
-      CategoriesCompanion.insert(name: 'Food', icon: 'restaurant', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Transport', icon: 'directions_car', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Shopping', icon: 'shopping_cart', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Bills', icon: 'receipt', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Rent', icon: 'home', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Entertainment', icon: 'movie', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Health', icon: 'local_hospital', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Education', icon: 'school', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Travel', icon: 'flight', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Groceries', icon: 'local_grocery_store', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Subscriptions', icon: 'subscriptions', type: 'expense', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Other', icon: 'category', type: 'expense', isDefault: const Value(true)),
-      
+      CategoriesCompanion.insert(
+        name: 'Food',
+        icon: 'restaurant',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Transport',
+        icon: 'directions_car',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Shopping',
+        icon: 'shopping_cart',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Bills',
+        icon: 'receipt',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Rent',
+        icon: 'home',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Entertainment',
+        icon: 'movie',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Health',
+        icon: 'local_hospital',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Education',
+        icon: 'school',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Travel',
+        icon: 'flight',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Groceries',
+        icon: 'local_grocery_store',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Subscriptions',
+        icon: 'subscriptions',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Other',
+        icon: 'category',
+        type: 'expense',
+        isDefault: const Value(true),
+      ),
+
       // Income Categories
-      CategoriesCompanion.insert(name: 'Salary', icon: 'attach_money', type: 'income', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Freelance', icon: 'work', type: 'income', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Business', icon: 'business', type: 'income', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Gift', icon: 'card_giftcard', type: 'income', isDefault: const Value(true)),
-      CategoriesCompanion.insert(name: 'Other', icon: 'category', type: 'income', isDefault: const Value(true)),
+      CategoriesCompanion.insert(
+        name: 'Salary',
+        icon: 'attach_money',
+        type: 'income',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Freelance',
+        icon: 'work',
+        type: 'income',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Business',
+        icon: 'business',
+        type: 'income',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Gift',
+        icon: 'card_giftcard',
+        type: 'income',
+        isDefault: const Value(true),
+      ),
+      CategoriesCompanion.insert(
+        name: 'Other',
+        icon: 'category',
+        type: 'income',
+        isDefault: const Value(true),
+      ),
     ];
 
     for (final category in defaultCategories) {

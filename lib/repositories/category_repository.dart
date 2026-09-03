@@ -30,15 +30,17 @@ class CategoryRepository {
 
   Future<int> addCategory(Category category) async {
     try {
-      return await _db.into(_db.categories).insert(
-        db.CategoriesCompanion.insert(
-          name: category.name,
-          icon: category.icon,
-          type: category.type.name,
-          isDefault: Value(category.isDefault),
-          createdAt: Value(category.createdAt ?? DateTime.now()),
-        )
-      );
+      return await _db
+          .into(_db.categories)
+          .insert(
+            db.CategoriesCompanion.insert(
+              name: category.name,
+              icon: category.icon,
+              type: category.type.name,
+              isDefault: Value(category.isDefault),
+              createdAt: Value(category.createdAt ?? DateTime.now()),
+            ),
+          );
     } catch (e) {
       throw Exception('Failed to add category: $e');
     }
@@ -47,15 +49,17 @@ class CategoryRepository {
   Future<bool> updateCategory(Category category) async {
     if (category.id == null) return false;
     try {
-      return await _db.update(_db.categories).replace(
-        db.CategoriesCompanion(
-          id: Value(category.id!),
-          name: Value(category.name),
-          icon: Value(category.icon),
-          type: Value(category.type.name),
-          isDefault: Value(category.isDefault),
-        )
-      );
+      return await _db
+          .update(_db.categories)
+          .replace(
+            db.CategoriesCompanion(
+              id: Value(category.id!),
+              name: Value(category.name),
+              icon: Value(category.icon),
+              type: Value(category.type.name),
+              isDefault: Value(category.isDefault),
+            ),
+          );
     } catch (e) {
       throw Exception('Failed to update category: $e');
     }
@@ -63,7 +67,9 @@ class CategoryRepository {
 
   Future<int> deleteCategory(int id) async {
     try {
-      return await (_db.delete(_db.categories)..where((c) => c.id.equals(id))).go();
+      return await (_db.delete(
+        _db.categories,
+      )..where((c) => c.id.equals(id))).go();
     } catch (e) {
       throw Exception('Failed to delete category: $e');
     }

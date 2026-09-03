@@ -23,8 +23,12 @@ class CategoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     final allCategories = await _categoryRepository.getCategories();
-    _expenseCategories = allCategories.where((c) => c.type == TransactionType.expense).toList();
-    _incomeCategories = allCategories.where((c) => c.type == TransactionType.income).toList();
+    _expenseCategories = allCategories
+        .where((c) => c.type == TransactionType.expense)
+        .toList();
+    _incomeCategories = allCategories
+        .where((c) => c.type == TransactionType.income)
+        .toList();
 
     _isLoading = false;
     notifyListeners();
@@ -46,7 +50,7 @@ class CategoryViewModel extends ChangeNotifier {
     if (inUse) {
       return false;
     }
-    
+
     await _categoryRepository.deleteCategory(id);
     await loadCategories();
     return true;

@@ -10,9 +10,10 @@ import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/category_repository.dart';
 import 'theme/app_theme.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -29,13 +30,13 @@ void main() async {
           create: (context) => CategoryRepository(context.read<AppDatabase>()),
         ),
         Provider<TransactionRepository>(
-          create: (context) => TransactionRepository(context.read<AppDatabase>()),
+          create: (context) =>
+              TransactionRepository(context.read<AppDatabase>()),
         ),
+        ChangeNotifierProvider(create: (context) => SettingsViewModel(prefs)),
         ChangeNotifierProvider(
-          create: (context) => SettingsViewModel(prefs),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => TransactionViewModel(context.read<TransactionRepository>()),
+          create: (context) =>
+              TransactionViewModel(context.read<TransactionRepository>()),
         ),
         ChangeNotifierProvider(
           create: (context) => CategoryViewModel(

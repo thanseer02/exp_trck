@@ -32,12 +32,16 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = context.select<TransactionViewModel, bool>((vm) => vm.isLoading);
+    final isLoading = context.select<TransactionViewModel, bool>(
+      (vm) => vm.isLoading,
+    );
 
     if (isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.backgroundDark,
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
       );
     }
 
@@ -45,14 +49,18 @@ class _DashboardViewState extends State<DashboardView> {
       backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => context.read<TransactionViewModel>().loadDashboardData(),
+          onRefresh: () =>
+              context.read<TransactionViewModel>().loadDashboardData(),
           color: AppColors.primary,
           backgroundColor: AppColors.surfaceDark,
           child: CustomScrollView(
             slivers: [
               const _FlowLedgerDarkHeader(),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 24.0,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +69,9 @@ class _DashboardViewState extends State<DashboardView> {
                       const SizedBox(height: 32),
                       _MinimalBalanceSection(
                         isHidden: _isBalanceHidden,
-                        onToggle: () => setState(() => _isBalanceHidden = !_isBalanceHidden),
+                        onToggle: () => setState(
+                          () => _isBalanceHidden = !_isBalanceHidden,
+                        ),
                       ),
                       const SizedBox(height: 40),
                       const _QuickActionHub(),
@@ -114,12 +124,16 @@ class _FlowLedgerDarkHeader extends StatelessWidget {
               color: AppColors.income,
               shape: BoxShape.circle,
             ),
-          )
+          ),
         ],
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.settings, color: AppColors.textSecondaryDark, size: 22),
+          icon: const Icon(
+            Icons.settings,
+            color: AppColors.textSecondaryDark,
+            size: 22,
+          ),
           onPressed: () {
             Navigator.pushNamed(context, AppRoutes.settings);
           },
@@ -173,19 +187,13 @@ class _GreetingSectionState extends State<_GreetingSection> {
   Widget build(BuildContext context) {
     final today = DateFormat('MMMM d, yyyy').format(DateTime.now());
     final userName = context.watch<SettingsViewModel>().userName;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          today.toUpperCase(),
-          style: AppStyles.sectionHeader,
-        ),
+        Text(today.toUpperCase(), style: AppStyles.sectionHeader),
         const SizedBox(height: 6),
-        Text(
-          '${_getGreeting()}, $userName',
-          style: AppStyles.heading2,
-        ),
+        Text('${_getGreeting()}, $userName', style: AppStyles.heading2),
         const SizedBox(height: 4),
         Text(
           _quote,
@@ -204,7 +212,10 @@ class _MinimalBalanceSection extends StatelessWidget {
   final bool isHidden;
   final VoidCallback onToggle;
 
-  const _MinimalBalanceSection({required this.isHidden, required this.onToggle});
+  const _MinimalBalanceSection({
+    required this.isHidden,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +224,7 @@ class _MinimalBalanceSection extends StatelessWidget {
         final balanceAmount = settings.formatAmount(vm.balance);
         final totalIncome = vm.monthlySummary?.totalIncome ?? 0.0;
         final totalExpense = vm.monthlySummary?.totalExpense ?? 0.0;
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -234,7 +245,9 @@ class _MinimalBalanceSection extends StatelessWidget {
                     GestureDetector(
                       onTap: onToggle,
                       child: Icon(
-                        isHidden ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        isHidden
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: AppColors.textSecondaryDark,
                         size: 16,
                       ),
@@ -251,10 +264,7 @@ class _MinimalBalanceSection extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      ' this month',
-                      style: AppStyles.caption,
-                    ),
+                    Text(' this month', style: AppStyles.caption),
                   ],
                 ),
               ],
@@ -277,27 +287,48 @@ class _MinimalBalanceSection extends StatelessWidget {
                 children: [
                   Text(
                     'Income ',
-                    style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                    style: TextStyle(
+                      color: AppColors.textTertiaryDark,
+                      fontSize: 12,
+                    ),
                   ),
                   Text(
                     settings.formatAmount(totalIncome),
-                    style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 12, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      color: AppColors.textPrimaryDark,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(width: 20),
                   Text(
                     'Expenses ',
-                    style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                    style: TextStyle(
+                      color: AppColors.textTertiaryDark,
+                      fontSize: 12,
+                    ),
                   ),
                   Text(
                     settings.formatAmount(totalExpense),
-                    style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 12, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      color: AppColors.textPrimaryDark,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(width: 20),
                   const Text(
                     'Net ',
-                    style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                    style: TextStyle(
+                      color: AppColors.textTertiaryDark,
+                      fontSize: 12,
+                    ),
                   ),
-                  const Icon(Icons.arrow_forward_rounded, color: AppColors.income, size: 14),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.income,
+                    size: 14,
+                  ),
                 ],
               ),
             ),
@@ -317,19 +348,27 @@ class _QuickActionHub extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _ActionBtn(
-          icon: Icons.add, 
-          label: 'Income', 
+          icon: Icons.add,
+          label: 'Income',
           iconColor: AppColors.income,
           onTap: () {
-            Navigator.pushNamed(context, AppRoutes.addEditTransaction, arguments: {'initialType': TransactionType.income});
+            Navigator.pushNamed(
+              context,
+              AppRoutes.addEditTransaction,
+              arguments: {'initialType': TransactionType.income},
+            );
           },
         ),
         _ActionBtn(
-          icon: Icons.remove, 
-          label: 'Expense', 
+          icon: Icons.remove,
+          label: 'Expense',
           iconColor: const Color(0xFFEF4444),
           onTap: () {
-            Navigator.pushNamed(context, AppRoutes.addEditTransaction, arguments: {'initialType': TransactionType.expense});
+            Navigator.pushNamed(
+              context,
+              AppRoutes.addEditTransaction,
+              arguments: {'initialType': TransactionType.expense},
+            );
           },
         ),
       ],
@@ -343,7 +382,12 @@ class _ActionBtn extends StatelessWidget {
   final Color iconColor;
   final VoidCallback? onTap;
 
-  const _ActionBtn({required this.icon, required this.label, required this.iconColor, this.onTap});
+  const _ActionBtn({
+    required this.icon,
+    required this.label,
+    required this.iconColor,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -357,16 +401,21 @@ class _ActionBtn extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.backgroundDark, // Uses the deep background
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.surfaceContainerLowDark, width: 1.5),
+              border: Border.all(
+                color: AppColors.surfaceContainerLowDark,
+                width: 1.5,
+              ),
             ),
-            child: Center(
-              child: Icon(icon, color: iconColor, size: 24),
-            ),
+            child: Center(child: Icon(icon, color: iconColor, size: 24)),
           ),
           const SizedBox(height: 12),
           Text(
             label,
-            style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 11, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: AppColors.textPrimaryDark,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -385,7 +434,7 @@ class _WeeklyCadenceSection extends StatelessWidget {
         final now = DateTime.now();
         final Map<int, double> dailyInflow = {};
         final Map<int, double> dailyOutflow = {};
-        
+
         // Initialize last 7 days
         for (int i = 6; i >= 0; i--) {
           final date = now.subtract(Duration(days: i));
@@ -397,12 +446,14 @@ class _WeeklyCadenceSection extends StatelessWidget {
         for (final tx in vm.transactions) {
           final date = tx.date.toLocal();
           final diff = now.difference(date).inDays;
-          
+
           if (diff >= 0 && diff < 7) {
             if (tx.type == TransactionType.income) {
-              dailyInflow[date.weekday] = (dailyInflow[date.weekday] ?? 0) + tx.amount;
+              dailyInflow[date.weekday] =
+                  (dailyInflow[date.weekday] ?? 0) + tx.amount;
             } else {
-              dailyOutflow[date.weekday] = (dailyOutflow[date.weekday] ?? 0) + tx.amount;
+              dailyOutflow[date.weekday] =
+                  (dailyOutflow[date.weekday] ?? 0) + tx.amount;
             }
           }
         }
@@ -411,26 +462,36 @@ class _WeeklyCadenceSection extends StatelessWidget {
         double maxVal = 1.0;
         for (int i = 6; i >= 0; i--) {
           final date = now.subtract(Duration(days: i));
-          if ((dailyInflow[date.weekday] ?? 0) > maxVal) maxVal = dailyInflow[date.weekday]!;
-          if ((dailyOutflow[date.weekday] ?? 0) > maxVal) maxVal = dailyOutflow[date.weekday]!;
+          if ((dailyInflow[date.weekday] ?? 0) > maxVal)
+            maxVal = dailyInflow[date.weekday]!;
+          if ((dailyOutflow[date.weekday] ?? 0) > maxVal)
+            maxVal = dailyOutflow[date.weekday]!;
         }
 
-        const double maxBarHeight = 60.0; // Fixed maximum height for the bars to fit in 100px SizedBox
+        const double maxBarHeight =
+            60.0; // Fixed maximum height for the bars to fit in 100px SizedBox
 
         final List<Widget> bars = [];
         final weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-        
+
         for (int i = 6; i >= 0; i--) {
           final date = now.subtract(Duration(days: i));
           final inVal = dailyInflow[date.weekday] ?? 0;
           final outVal = dailyOutflow[date.weekday] ?? 0;
-          
+
           final inH = (inVal / maxVal) * maxBarHeight;
           final outH = (outVal / maxVal) * maxBarHeight;
-          
+
           final isToday = i == 0;
-          
-          bars.add(_CadenceBar(day: weekdays[date.weekday - 1], inH: inH, outH: outH, isBold: isToday));
+
+          bars.add(
+            _CadenceBar(
+              day: weekdays[date.weekday - 1],
+              inH: inH,
+              outH: outH,
+              isBold: isToday,
+            ),
+          );
         }
 
         return Column(
@@ -442,11 +503,25 @@ class _WeeklyCadenceSection extends StatelessWidget {
                 const Text('Weekly Cadence', style: AppStyles.bodyPrimary),
                 Row(
                   children: [
-                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.income, shape: BoxShape.circle)),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.income,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
                     const Text('Inflow', style: AppStyles.caption),
                     const SizedBox(width: 12),
-                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.surfaceContainerHighDark, shape: BoxShape.circle)),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.surfaceContainerHighDark,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
                     const Text('Outflow', style: AppStyles.caption),
                   ],
@@ -476,7 +551,12 @@ class _CadenceBar extends StatelessWidget {
   final double outH;
   final bool isBold;
 
-  const _CadenceBar({required this.day, required this.inH, required this.outH, this.isBold = false});
+  const _CadenceBar({
+    required this.day,
+    required this.inH,
+    required this.outH,
+    this.isBold = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -486,16 +566,32 @@ class _CadenceBar extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(width: 6, height: inH > 0 ? inH : 2, decoration: BoxDecoration(color: AppColors.income, borderRadius: BorderRadius.circular(3))),
+            Container(
+              width: 6,
+              height: inH > 0 ? inH : 2,
+              decoration: BoxDecoration(
+                color: AppColors.income,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
             const SizedBox(width: 2),
-            Container(width: 6, height: outH > 0 ? outH : 2, decoration: BoxDecoration(color: AppColors.surfaceContainerHighDark, borderRadius: BorderRadius.circular(3))),
+            Container(
+              width: 6,
+              height: outH > 0 ? outH : 2,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerHighDark,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Text(
           day,
           style: TextStyle(
-            color: isBold ? AppColors.textPrimaryDark : AppColors.textTertiaryDark,
+            color: isBold
+                ? AppColors.textPrimaryDark
+                : AppColors.textTertiaryDark,
             fontSize: 11,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
           ),
@@ -510,23 +606,39 @@ class _RecentActivitySection extends StatelessWidget {
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category_outlined;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'receipt':
+        return Icons.receipt;
+      case 'home':
+        return Icons.home;
+      case 'movie':
+        return Icons.movie;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'school':
+        return Icons.school;
+      case 'flight':
+        return Icons.flight;
+      case 'local_grocery_store':
+        return Icons.local_grocery_store;
+      case 'subscriptions':
+        return Icons.subscriptions;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'work':
+        return Icons.work;
+      case 'business':
+        return Icons.business;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      case 'category':
+      default:
+        return Icons.category_outlined;
     }
   }
 
@@ -538,14 +650,8 @@ class _RecentActivitySection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Recent Activity',
-              style: AppStyles.bodyPrimary,
-            ),
-            const Text(
-              'View all',
-              style: AppStyles.caption,
-            ),
+            const Text('Recent Activity', style: AppStyles.bodyPrimary),
+            const Text('View all', style: AppStyles.caption),
           ],
         ),
         const SizedBox(height: 24),
@@ -553,19 +659,29 @@ class _RecentActivitySection extends StatelessWidget {
           builder: (context, vm, categoryVm, child) {
             if (vm.recentTransactions.isEmpty) {
               return Center(
-                child: Text('No recent transactions.', style: AppStyles.bodySecondary),
+                child: Text(
+                  'No recent transactions.',
+                  style: AppStyles.bodySecondary,
+                ),
               );
             }
-            
+
             return Column(
               children: vm.recentTransactions.take(4).map((tx) {
                 final isIncome = tx.type == TransactionType.income;
-                final categories = isIncome ? categoryVm.incomeCategories : categoryVm.expenseCategories;
+                final categories = isIncome
+                    ? categoryVm.incomeCategories
+                    : categoryVm.expenseCategories;
                 final category = categories.firstWhere(
                   (c) => c.id == tx.categoryId,
-                  orElse: () => Category(id: -1, name: 'Unknown', icon: 'category', type: tx.type),
+                  orElse: () => Category(
+                    id: -1,
+                    name: 'Unknown',
+                    icon: 'category',
+                    type: tx.type,
+                  ),
                 );
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 24.0),
                   child: Row(
@@ -578,7 +694,7 @@ class _RecentActivitySection extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          _getIconData(category.icon), 
+                          _getIconData(category.icon),
                           color: AppColors.textSecondaryDark,
                           size: 18,
                         ),
@@ -589,7 +705,9 @@ class _RecentActivitySection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name,
+                              tx.note != null && tx.note!.isNotEmpty
+                                  ? tx.note!
+                                  : category.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppStyles.bodyPrimary,
@@ -611,14 +729,23 @@ class _RecentActivitySection extends StatelessWidget {
                             '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: isIncome ? AppColors.income : const Color(0xFFF87171), // Soft red/pink for expenses in this dark design, or keep it white. The mockup shows soft red.
+                              color: isIncome
+                                  ? AppColors.income
+                                  : const Color(
+                                      0xFFF87171,
+                                    ), // Soft red/pink for expenses in this dark design, or keep it white. The mockup shows soft red.
                               fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             isIncome ? 'CLEARED' : 'CARD',
-                            style: TextStyle(fontSize: 8, color: AppColors.textTertiaryDark, letterSpacing: 1.0, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 8,
+                              color: AppColors.textTertiaryDark,
+                              letterSpacing: 1.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -642,10 +769,7 @@ class _ExploreSections extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Explore & Sections',
-          style: AppStyles.bodyPrimary,
-        ),
+        const Text('Explore & Sections', style: AppStyles.bodyPrimary),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -750,7 +874,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-
 class _FinancialTipBanner extends StatelessWidget {
   const _FinancialTipBanner();
 
@@ -766,12 +889,20 @@ class _FinancialTipBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, color: AppColors.textTertiaryDark, size: 16),
+          const Icon(
+            Icons.info_outline,
+            color: AppColors.textTertiaryDark,
+            size: 16,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'Tracking 18% below discretionary target. On pace to reach your \$20K reserve goal 3 weeks ahead of schedule.',
-              style: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 11, height: 1.5),
+              style: const TextStyle(
+                color: AppColors.textSecondaryDark,
+                fontSize: 11,
+                height: 1.5,
+              ),
             ),
           ),
         ],

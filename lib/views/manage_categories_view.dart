@@ -9,23 +9,39 @@ class ManageCategoriesView extends StatelessWidget {
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'receipt':
+        return Icons.receipt;
+      case 'home':
+        return Icons.home;
+      case 'movie':
+        return Icons.movie;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'school':
+        return Icons.school;
+      case 'flight':
+        return Icons.flight;
+      case 'local_grocery_store':
+        return Icons.local_grocery_store;
+      case 'subscriptions':
+        return Icons.subscriptions;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'work':
+        return Icons.work;
+      case 'business':
+        return Icons.business;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      case 'category':
+      default:
+        return Icons.category;
     }
   }
 
@@ -66,7 +82,11 @@ class ManageCategoriesView extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryList(BuildContext context, List<Category> categories, CategoryViewModel vm) {
+  Widget _buildCategoryList(
+    BuildContext context,
+    List<Category> categories,
+    CategoryViewModel vm,
+  ) {
     if (categories.isEmpty) {
       return const Center(child: Text('No categories found.'));
     }
@@ -83,7 +103,11 @@ class ManageCategoriesView extends StatelessWidget {
           subtitle: category.isDefault ? const Text('Default') : null,
           trailing: const Icon(Icons.edit, size: 20, color: Colors.grey),
           onTap: () {
-            Navigator.pushNamed(context, AppRoutes.addEditCategory, arguments: {'category': category});
+            Navigator.pushNamed(
+              context,
+              AppRoutes.addEditCategory,
+              arguments: {'category': category},
+            );
           },
         );
       },

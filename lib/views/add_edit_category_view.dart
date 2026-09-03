@@ -14,16 +14,28 @@ class AddEditCategoryView extends StatefulWidget {
 
 class _AddEditCategoryViewState extends State<AddEditCategoryView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TransactionType _selectedType;
   String? _name;
   late String _selectedIcon;
-  
+
   final List<String> _availableIcons = [
-    'category', 'restaurant', 'directions_car', 'shopping_cart', 
-    'receipt', 'home', 'movie', 'local_hospital', 'school', 
-    'flight', 'local_grocery_store', 'subscriptions', 'attach_money', 
-    'work', 'business', 'card_giftcard'
+    'category',
+    'restaurant',
+    'directions_car',
+    'shopping_cart',
+    'receipt',
+    'home',
+    'movie',
+    'local_hospital',
+    'school',
+    'flight',
+    'local_grocery_store',
+    'subscriptions',
+    'attach_money',
+    'work',
+    'business',
+    'card_giftcard',
   ];
 
   @override
@@ -42,23 +54,39 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'receipt':
+        return Icons.receipt;
+      case 'home':
+        return Icons.home;
+      case 'movie':
+        return Icons.movie;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'school':
+        return Icons.school;
+      case 'flight':
+        return Icons.flight;
+      case 'local_grocery_store':
+        return Icons.local_grocery_store;
+      case 'subscriptions':
+        return Icons.subscriptions;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'work':
+        return Icons.work;
+      case 'business':
+        return Icons.business;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      case 'category':
+      default:
+        return Icons.category;
     }
   }
 
@@ -84,7 +112,9 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
 
     if (confirm == true && mounted && widget.category?.id != null) {
       try {
-        final success = await context.read<CategoryViewModel>().deleteCategory(widget.category!.id!);
+        final success = await context.read<CategoryViewModel>().deleteCategory(
+          widget.category!.id!,
+        );
         if (mounted) {
           if (success) {
             Navigator.pop(context);
@@ -93,7 +123,11 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Cannot delete category in use by existing transactions.')),
+              const SnackBar(
+                content: Text(
+                  'Cannot delete category in use by existing transactions.',
+                ),
+              ),
             );
           }
         }
@@ -129,18 +163,20 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
       } else {
         await context.read<CategoryViewModel>().addCategory(category);
       }
-      
+
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isEdit ? 'Category updated!' : 'Category added!')),
+          SnackBar(
+            content: Text(isEdit ? 'Category updated!' : 'Category added!'),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving category: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving category: $e')));
       }
     }
   }
@@ -148,7 +184,7 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.category != null;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Category' : 'Add Category'),
@@ -169,8 +205,14 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
               if (!isEdit) ...[
                 SegmentedButton<TransactionType>(
                   segments: const [
-                    ButtonSegment(value: TransactionType.expense, label: Text('Expense')),
-                    ButtonSegment(value: TransactionType.income, label: Text('Income')),
+                    ButtonSegment(
+                      value: TransactionType.expense,
+                      label: Text('Expense'),
+                    ),
+                    ButtonSegment(
+                      value: TransactionType.income,
+                      label: Text('Income'),
+                    ),
                   ],
                   selected: {_selectedType},
                   onSelectionChanged: (Set<TransactionType> selection) {
@@ -196,7 +238,10 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
                 onSaved: (value) => _name = value!.trim(),
               ),
               const SizedBox(height: 24),
-              const Text('Select Icon', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'Select Icon',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
               GridView.builder(
                 shrinkWrap: true,
@@ -219,16 +264,22 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.deepPurple.withValues(alpha: 0.2) : Colors.grey.shade100,
+                        color: isSelected
+                            ? Colors.deepPurple.withValues(alpha: 0.2)
+                            : Colors.grey.shade100,
                         border: Border.all(
-                          color: isSelected ? Colors.deepPurple : Colors.transparent,
+                          color: isSelected
+                              ? Colors.deepPurple
+                              : Colors.transparent,
                           width: 2,
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         _getIconData(iconName),
-                        color: isSelected ? Colors.deepPurple : Colors.grey.shade600,
+                        color: isSelected
+                            ? Colors.deepPurple
+                            : Colors.grey.shade600,
                       ),
                     ),
                   );
@@ -240,7 +291,10 @@ class _AddEditCategoryViewState extends State<AddEditCategoryView> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: _saveCategory,
-                child: const Text('Save Category', style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  'Save Category',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ],
           ),

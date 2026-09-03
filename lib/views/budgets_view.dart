@@ -26,23 +26,39 @@ class _BudgetsViewState extends State<BudgetsView> {
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category_outlined;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'receipt':
+        return Icons.receipt;
+      case 'home':
+        return Icons.home;
+      case 'movie':
+        return Icons.movie;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'school':
+        return Icons.school;
+      case 'flight':
+        return Icons.flight;
+      case 'local_grocery_store':
+        return Icons.local_grocery_store;
+      case 'subscriptions':
+        return Icons.subscriptions;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'work':
+        return Icons.work;
+      case 'business':
+        return Icons.business;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      case 'category':
+      default:
+        return Icons.category_outlined;
     }
   }
 
@@ -65,16 +81,21 @@ class _BudgetsViewState extends State<BudgetsView> {
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimaryDark,
+            size: 22,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-
       ),
       body: Consumer2<TransactionViewModel, SettingsViewModel>(
         builder: (context, vm, settings, child) {
           final isLoading = vm.isLoading;
           if (isLoading) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
           }
 
           final totalExpense = vm.monthlySummary?.totalExpense ?? 0.0;
@@ -84,22 +105,32 @@ class _BudgetsViewState extends State<BudgetsView> {
           // Assuming a global budget limit of $3,000 for demonstration, unless income exists
           final globalBudget = totalIncome > 0 ? totalIncome * 0.8 : 3000.0;
           final spentRatio = (totalExpense / globalBudget).clamp(0.0, 1.0);
-          final remaining = (globalBudget - totalExpense).clamp(0.0, double.infinity);
-          
+          final remaining = (globalBudget - totalExpense).clamp(
+            0.0,
+            double.infinity,
+          );
+
           final isOverBudget = totalExpense > globalBudget;
 
           final categoryBudgets = vm.topSpending;
 
           return SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 8.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header
                   const Text(
                     'Budgets & Targets',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimaryDark),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimaryDark,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   const Text(
@@ -107,7 +138,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                     style: AppStyles.bodySecondary,
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Overall Discretionary Budget
                   Container(
                     padding: const EdgeInsets.all(24),
@@ -126,7 +157,11 @@ class _BudgetsViewState extends State<BudgetsView> {
                               'MONTHLY DISCRETIONARY',
                               style: AppStyles.sectionHeader,
                             ),
-                            const Icon(Icons.more_horiz, color: AppColors.textSecondaryDark, size: 20),
+                            const Icon(
+                              Icons.more_horiz,
+                              color: AppColors.textSecondaryDark,
+                              size: 20,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -141,7 +176,10 @@ class _BudgetsViewState extends State<BudgetsView> {
                             const SizedBox(width: 8),
                             Text(
                               'spent of ${settings.formatAmount(globalBudget)}',
-                              style: const TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                              style: const TextStyle(
+                                color: AppColors.textTertiaryDark,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -159,7 +197,9 @@ class _BudgetsViewState extends State<BudgetsView> {
                             widthFactor: spentRatio,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: isOverBudget ? const Color(0xFFF87171) : AppColors.income,
+                                color: isOverBudget
+                                    ? const Color(0xFFF87171)
+                                    : AppColors.income,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -172,7 +212,9 @@ class _BudgetsViewState extends State<BudgetsView> {
                             Text(
                               isOverBudget ? 'Over budget' : 'On track',
                               style: TextStyle(
-                                color: isOverBudget ? const Color(0xFFF87171) : AppColors.income,
+                                color: isOverBudget
+                                    ? const Color(0xFFF87171)
+                                    : AppColors.income,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -186,24 +228,30 @@ class _BudgetsViewState extends State<BudgetsView> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 48),
-                  
+
                   // By Category Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Category Budgets', style: AppStyles.sectionTitle),
+                      const Text(
+                        'Category Budgets',
+                        style: AppStyles.sectionTitle,
+                      ),
                       const Text('Edit', style: AppStyles.bodySecondary),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   if (categoryBudgets.isEmpty)
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(24.0),
-                        child: Text('No spending data to generate category budgets.', style: AppStyles.bodySecondary),
+                        child: Text(
+                          'No spending data to generate category budgets.',
+                          style: AppStyles.bodySecondary,
+                        ),
                       ),
                     )
                   else
@@ -212,9 +260,12 @@ class _BudgetsViewState extends State<BudgetsView> {
                       final item = categoryBudgets[index];
                       // Assigning a realistic mock budget based on the spending to demonstrate UI
                       final categoryLimit = item.totalAmount * 1.25 + 50.0;
-                      final percent = (item.totalAmount / categoryLimit).clamp(0.0, 1.0);
+                      final percent = (item.totalAmount / categoryLimit).clamp(
+                        0.0,
+                        1.0,
+                      );
                       final isCatOverBudget = item.totalAmount > categoryLimit;
-                      
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 24.0),
                         child: _BudgetCategoryRow(
@@ -228,23 +279,28 @@ class _BudgetsViewState extends State<BudgetsView> {
                         ),
                       );
                     }),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Savings Goals Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Savings Goals', style: AppStyles.sectionTitle),
+                      const Text(
+                        'Savings Goals',
+                        style: AppStyles.sectionTitle,
+                      ),
                       const Text('Add', style: AppStyles.bodySecondary),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Savings Goal Card mapped to global balance
                   Builder(
                     builder: (context) {
-                      final goalTarget = totalBalance > 0 ? totalBalance * 1.5 : 1000.0;
+                      final goalTarget = totalBalance > 0
+                          ? totalBalance * 1.5
+                          : 1000.0;
                       return Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
@@ -263,58 +319,94 @@ class _BudgetsViewState extends State<BudgetsView> {
                                     color: AppColors.surfaceContainerLowDark,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.shield_outlined, color: AppColors.income, size: 20),
+                                  child: const Icon(
+                                    Icons.shield_outlined,
+                                    color: AppColors.income,
+                                    size: 20,
+                                  ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Text('Emergency Reserve', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, fontWeight: FontWeight.bold)),
+                                      const Text(
+                                        'Emergency Reserve',
+                                        style: TextStyle(
+                                          color: AppColors.textPrimaryDark,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                       const SizedBox(height: 4),
-                                      Text('${settings.formatAmount(totalBalance)} of ${settings.formatAmount(goalTarget)}', style: AppStyles.bodySecondary),
+                                      Text(
+                                        '${settings.formatAmount(totalBalance)} of ${settings.formatAmount(goalTarget)}',
+                                        style: AppStyles.bodySecondary,
+                                      ),
                                     ],
                                   ),
                                 ),
-                                Text('${((totalBalance / goalTarget).clamp(0.0, 1.0) * 100).toInt()}%', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text(
+                                  '${((totalBalance / goalTarget).clamp(0.0, 1.0) * 100).toInt()}%',
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimaryDark,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 20),
-                        Container(
-                          height: 6,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHighDark,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: goalTarget > 0 ? (totalBalance / goalTarget).clamp(0.0, 1.0) : 0.0,
-                            child: Container(
+                            Container(
+                              height: 6,
+                              width: double.infinity,
                               decoration: BoxDecoration(
-                                color: AppColors.income,
+                                color: AppColors.surfaceContainerHighDark,
                                 borderRadius: BorderRadius.circular(3),
                               ),
+                              child: FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: goalTarget > 0
+                                    ? (totalBalance / goalTarget).clamp(
+                                        0.0,
+                                        1.0,
+                                      )
+                                    : 0.0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.income,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () {},
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppColors.borderDark),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {},
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: AppColors.borderDark,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Add Funds',
+                                  style: AppStyles.bodyPrimary,
+                                ),
+                              ),
                             ),
-                            child: const Text('Add Funds', style: AppStyles.bodyPrimary),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                   }
+                      );
+                    },
                   ),
                   const SizedBox(height: 64),
                 ],
@@ -372,9 +464,13 @@ class _BudgetCategoryRow extends StatelessWidget {
                   Text(
                     '$spent / $total',
                     style: TextStyle(
-                      color: isOverBudget ? const Color(0xFFF87171) : AppColors.textPrimaryDark,
+                      color: isOverBudget
+                          ? const Color(0xFFF87171)
+                          : AppColors.textPrimaryDark,
                       fontSize: 12,
-                      fontWeight: isOverBudget ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isOverBudget
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ],

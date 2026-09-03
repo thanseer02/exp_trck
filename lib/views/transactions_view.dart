@@ -19,7 +19,7 @@ class TransactionsView extends StatefulWidget {
 }
 
 class _TransactionsViewState extends State<TransactionsView> {
-  /// Initializes the state by scheduling a callback to load 
+  /// Initializes the state by scheduling a callback to load
   /// transactions and categories after the first frame is rendered.
   @override
   void initState() {
@@ -31,8 +31,6 @@ class _TransactionsViewState extends State<TransactionsView> {
       }
     });
   }
-
-
 
   /// Builds the main screen of the transactions view, containing an app bar,
   /// a floating action button to add a transaction, and the transaction list.
@@ -47,16 +45,22 @@ class _TransactionsViewState extends State<TransactionsView> {
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimaryDark,
+            size: 22,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Ledger', style: AppStyles.appBarTitle),
-
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary, // Green FlowLedger action
         onPressed: () async {
-          final result = await Navigator.pushNamed(context, AppRoutes.addEditTransaction);
+          final result = await Navigator.pushNamed(
+            context,
+            AppRoutes.addEditTransaction,
+          );
           if (result == true && mounted) {
             context.read<TransactionViewModel>().loadTransactions();
           }
@@ -65,7 +69,9 @@ class _TransactionsViewState extends State<TransactionsView> {
       ),
       body: SafeArea(
         child: isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.income))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.income),
+              )
             : RefreshIndicator(
                 onRefresh: () => vm.loadTransactions(),
                 color: AppColors.income,
@@ -91,12 +97,13 @@ class _TransactionsViewState extends State<TransactionsView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.receipt_long, size: 64, color: AppColors.surfaceContainerHighDark),
-          const SizedBox(height: 16),
-          Text(
-            'No transactions found.',
-            style: AppStyles.bodySecondary,
+          const Icon(
+            Icons.receipt_long,
+            size: 64,
+            color: AppColors.surfaceContainerHighDark,
           ),
+          const SizedBox(height: 16),
+          Text('No transactions found.', style: AppStyles.bodySecondary),
         ],
       ),
     );
@@ -106,7 +113,7 @@ class _TransactionsViewState extends State<TransactionsView> {
   Widget _buildTransactionList(TransactionViewModel vm) {
     // Group transactions by date
     final groupedTransactions = <String, List<Transaction>>{};
-    
+
     for (var tx in vm.transactions) {
       final dateKey = DateFormat('yyyy-MM-dd').format(tx.date.toLocal());
       if (!groupedTransactions.containsKey(dateKey)) {
@@ -114,8 +121,9 @@ class _TransactionsViewState extends State<TransactionsView> {
       }
       groupedTransactions[dateKey]!.add(tx);
     }
-    
-    final sortedKeys = groupedTransactions.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    final sortedKeys = groupedTransactions.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -124,27 +132,35 @@ class _TransactionsViewState extends State<TransactionsView> {
         final dateKey = sortedKeys[index];
         final transactionsForDate = groupedTransactions[dateKey]!;
         final date = DateTime.parse(dateKey);
-        
+
         final now = DateTime.now();
-        final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
-        final isYesterday = date.year == now.year && date.month == now.month && date.day == now.day - 1;
-        
+        final isToday =
+            date.year == now.year &&
+            date.month == now.month &&
+            date.day == now.day;
+        final isYesterday =
+            date.year == now.year &&
+            date.month == now.month &&
+            date.day == now.day - 1;
+
         String displayDate = DateFormat('MMMM d, yyyy').format(date);
-        if (isToday) displayDate = 'TODAY';
-        else if (isYesterday) displayDate = 'YESTERDAY';
-        else displayDate = displayDate.toUpperCase();
+        if (isToday)
+          displayDate = 'TODAY';
+        else if (isYesterday)
+          displayDate = 'YESTERDAY';
+        else
+          displayDate = displayDate.toUpperCase();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Text(
-                displayDate,
-                style: AppStyles.sectionHeader,
-              ),
+              child: Text(displayDate, style: AppStyles.sectionHeader),
             ),
-            ...transactionsForDate.map((tx) => _TransactionTile(tx: tx, vm: vm)).toList(),
+            ...transactionsForDate
+                .map((tx) => _TransactionTile(tx: tx, vm: vm))
+                .toList(),
           ],
         );
       },
@@ -176,7 +192,11 @@ class _FilterChipsSection extends StatelessWidget {
   }
 
   /// Builds a single filter chip for a specific transaction type.
-  Widget _buildFilterChip(String label, TransactionType? type, TransactionViewModel vm) {
+  Widget _buildFilterChip(
+    String label,
+    TransactionType? type,
+    TransactionViewModel vm,
+  ) {
     final isSelected = vm.filterType == type;
     return GestureDetector(
       onTap: () {
@@ -187,12 +207,18 @@ class _FilterChipsSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? AppColors.textPrimaryDark : AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppColors.textPrimaryDark : AppColors.borderDark),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.textPrimaryDark
+                : AppColors.borderDark,
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppColors.backgroundDark : AppColors.textSecondaryDark,
+            color: isSelected
+                ? AppColors.backgroundDark
+                : AppColors.textSecondaryDark,
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
@@ -211,23 +237,39 @@ class _TransactionTile extends StatelessWidget {
   /// Maps a string icon name to the corresponding [IconData] object.
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category_outlined;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'receipt':
+        return Icons.receipt;
+      case 'home':
+        return Icons.home;
+      case 'movie':
+        return Icons.movie;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'school':
+        return Icons.school;
+      case 'flight':
+        return Icons.flight;
+      case 'local_grocery_store':
+        return Icons.local_grocery_store;
+      case 'subscriptions':
+        return Icons.subscriptions;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'work':
+        return Icons.work;
+      case 'business':
+        return Icons.business;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      case 'category':
+      default:
+        return Icons.category_outlined;
     }
   }
 
@@ -237,10 +279,13 @@ class _TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isIncome = tx.type == TransactionType.income;
     final categoryVm = context.read<CategoryViewModel>();
-    final categories = isIncome ? categoryVm.incomeCategories : categoryVm.expenseCategories;
+    final categories = isIncome
+        ? categoryVm.incomeCategories
+        : categoryVm.expenseCategories;
     final category = categories.firstWhere(
       (c) => c.id == tx.categoryId,
-      orElse: () => Category(id: -1, name: 'Unknown', icon: 'category', type: tx.type),
+      orElse: () =>
+          Category(id: -1, name: 'Unknown', icon: 'category', type: tx.type),
     );
 
     return Dismissible(
@@ -257,8 +302,14 @@ class _TransactionTile extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: AppColors.surfaceDark,
-            title: const Text('Delete Transaction', style: AppStyles.bodyPrimary),
-            content: const Text('Are you sure you want to delete this transaction?', style: AppStyles.bodySecondary),
+            title: const Text(
+              'Delete Transaction',
+              style: AppStyles.bodyPrimary,
+            ),
+            content: const Text(
+              'Are you sure you want to delete this transaction?',
+              style: AppStyles.bodySecondary,
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -298,7 +349,7 @@ class _TransactionTile extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  _getIconData(category.icon), 
+                  _getIconData(category.icon),
                   color: AppColors.textSecondaryDark,
                   size: 18,
                 ),
@@ -309,7 +360,9 @@ class _TransactionTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name,
+                      tx.note != null && tx.note!.isNotEmpty
+                          ? tx.note!
+                          : category.name,
                       style: AppStyles.bodyPrimary,
                     ),
                     const SizedBox(height: 4),
@@ -329,14 +382,21 @@ class _TransactionTile extends StatelessWidget {
                     '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isIncome ? AppColors.income : const Color(0xFFF87171), 
+                      color: isIncome
+                          ? AppColors.income
+                          : const Color(0xFFF87171),
                       fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     isIncome ? 'CLEARED' : 'CARD',
-                    style: const TextStyle(fontSize: 8, color: AppColors.textTertiaryDark, letterSpacing: 1.0, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 8,
+                      color: AppColors.textTertiaryDark,
+                      letterSpacing: 1.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),

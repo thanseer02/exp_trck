@@ -20,52 +20,69 @@ class CategoryDetailsView extends StatelessWidget {
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'receipt':
+        return Icons.receipt;
+      case 'home':
+        return Icons.home;
+      case 'movie':
+        return Icons.movie;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'school':
+        return Icons.school;
+      case 'flight':
+        return Icons.flight;
+      case 'local_grocery_store':
+        return Icons.local_grocery_store;
+      case 'subscriptions':
+        return Icons.subscriptions;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'work':
+        return Icons.work;
+      case 'business':
+        return Icons.business;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      case 'category':
+      default:
+        return Icons.category;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<TransactionViewModel>();
-    
+
     // Filter transactions by category and month
     final categoryTransactions = vm.transactions.where((tx) {
       return tx.categoryId == category.id &&
-             tx.date.year == month.year &&
-             tx.date.month == month.month;
+          tx.date.year == month.year &&
+          tx.date.month == month.month;
     }).toList();
-    
+
     // Sort newest first
     categoryTransactions.sort((a, b) => b.date.compareTo(a.date));
 
     // Calculate stats
-    final totalSpent = categoryTransactions.fold(0.0, (sum, tx) => sum + tx.amount);
+    final totalSpent = categoryTransactions.fold(
+      0.0,
+      (sum, tx) => sum + tx.amount,
+    );
     final txCount = categoryTransactions.length;
     final avgTx = txCount > 0 ? totalSpent / txCount : 0.0;
-    
+
     final isIncome = category.type == TransactionType.income;
     final color = isIncome ? Colors.green : Colors.red;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(category.name),
-      ),
+      appBar: AppBar(title: Text(category.name)),
       body: Column(
         children: [
           // Header Stats
@@ -77,7 +94,11 @@ class CategoryDetailsView extends StatelessWidget {
                 CircleAvatar(
                   radius: 32,
                   backgroundColor: color.withValues(alpha: 0.1),
-                  child: Icon(_getIconData(category.icon), color: color, size: 32),
+                  child: Icon(
+                    _getIconData(category.icon),
+                    color: color,
+                    size: 32,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -87,21 +108,32 @@ class CategoryDetailsView extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   context.read<SettingsViewModel>().formatAmount(totalSpent),
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: color),
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildStatCol('Transactions', '$txCount'),
-                    Container(height: 30, width: 1, color: Colors.grey.shade300),
-                    _buildStatCol('Avg Transaction', context.read<SettingsViewModel>().formatAmount(avgTx)),
+                    Container(
+                      height: 30,
+                      width: 1,
+                      color: Colors.grey.shade300,
+                    ),
+                    _buildStatCol(
+                      'Avg Transaction',
+                      context.read<SettingsViewModel>().formatAmount(avgTx),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          
+
           // Transactions List
           Expanded(
             child: categoryTransactions.isEmpty
@@ -123,7 +155,7 @@ class CategoryDetailsView extends StatelessWidget {
                         onDismissed: (direction) async {
                           final vm = context.read<TransactionViewModel>();
                           await vm.deleteTransaction(tx.id!);
-                          
+
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -142,17 +174,29 @@ class CategoryDetailsView extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 8.0),
                           child: ListTile(
                             onTap: () {
-                              Navigator.pushNamed(context, AppRoutes.addEditTransaction, arguments: {'transaction': tx});
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.addEditTransaction,
+                                arguments: {'transaction': tx},
+                              );
                             },
                             leading: CircleAvatar(
                               backgroundColor: color.withValues(alpha: 0.1),
                               child: Icon(
-                                isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                                isIncome
+                                    ? Icons.arrow_downward
+                                    : Icons.arrow_upward,
                                 color: color,
                               ),
                             ),
-                            title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name),
-                            subtitle: Text(DateFormat.yMMMd().format(tx.date.toLocal())),
+                            title: Text(
+                              tx.note != null && tx.note!.isNotEmpty
+                                  ? tx.note!
+                                  : category.name,
+                            ),
+                            subtitle: Text(
+                              DateFormat.yMMMd().format(tx.date.toLocal()),
+                            ),
                             trailing: Text(
                               '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
                               style: TextStyle(
@@ -177,7 +221,10 @@ class CategoryDetailsView extends StatelessWidget {
       children: [
         Text(label, style: AppStyles.bodySecondary),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }

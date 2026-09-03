@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
+import '../models/analytics_period.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
@@ -13,8 +14,6 @@ class AnalyticsView extends StatefulWidget {
 }
 
 class _AnalyticsViewState extends State<AnalyticsView> {
-  int _selectedSegment = 1; // 0=Week, 1=Month, 2=Year
-
   @override
   void initState() {
     super.initState();
@@ -40,14 +39,42 @@ class _AnalyticsViewState extends State<AnalyticsView> {
 
     final totalExpense = vm.analyticsMonthlySummary?.totalExpense ?? 0.0;
     final totalIncome = vm.analyticsMonthlySummary?.totalIncome ?? 0.0;
-    final budget = totalIncome > 0 ? totalIncome : (totalExpense > 0 ? totalExpense : 0.0);
-    final spentPercentage = budget > 0 ? (totalExpense / budget).clamp(0.0, 1.0) : 0.0;
+    final budget = totalIncome > 0
+        ? totalIncome
+        : (totalExpense > 0 ? totalExpense : 0.0);
+    final spentPercentage = budget > 0
+        ? (totalExpense / budget).clamp(0.0, 1.0)
+        : 0.0;
     final spentPercentText = '${(spentPercentage * 100).toInt()}%';
     final remaining = budget > totalExpense ? budget - totalExpense : 0.0;
-    
+
     final now = DateTime.now();
-    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-    final daysLeft = daysInMonth - now.day;
+    int daysLeft = 0;
+    String periodText = '';
+
+    switch (vm.analyticsPeriod) {
+      case AnalyticsPeriod.week:
+        daysLeft = 7 - now.weekday;
+        periodText = 'THIS WEEK';
+        break;
+      case AnalyticsPeriod.month:
+        final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+        daysLeft = daysInMonth - now.day;
+        periodText = 'THIS MONTH';
+        break;
+      case AnalyticsPeriod.year:
+        final daysInYear =
+            DateTime(
+              now.year,
+              12,
+              31,
+            ).difference(DateTime(now.year, 1, 1)).inDays +
+            1;
+        final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays + 1;
+        daysLeft = daysInYear - dayOfYear;
+        periodText = 'THIS YEAR';
+        break;
+    }
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -55,10 +82,13 @@ class _AnalyticsViewState extends State<AnalyticsView> {
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimaryDark,
+            size: 22,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -75,7 +105,11 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                     children: [
                       const Text(
                         'Analytics',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimaryDark),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimaryDark,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -85,13 +119,15 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                     ],
                   ),
                   _SegmentedControl(
-                    selectedIndex: _selectedSegment,
-                    onChanged: (idx) => setState(() => _selectedSegment = idx),
+                    selectedIndex: vm.analyticsPeriod.index,
+                    onChanged: (idx) => context
+                        .read<TransactionViewModel>()
+                        .setAnalyticsPeriod(AnalyticsPeriod.values[idx]),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              
+
               // Hero Spend Card
               Container(
                 padding: const EdgeInsets.all(24),
@@ -106,13 +142,14 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'SPENT THIS MONTH',
-                          style: AppStyles.sectionHeader,
-                        ),
+                        Text(periodText, style: AppStyles.sectionHeader),
                         Text(
                           spentPercentText,
-                          style: const TextStyle(color: AppColors.income, fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: AppColors.income,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -128,7 +165,10 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                         const SizedBox(width: 8),
                         Text(
                           'of ${settings.formatAmount(budget)}',
-                          style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                          style: TextStyle(
+                            color: AppColors.textTertiaryDark,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -160,59 +200,74 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                           '${settings.formatAmount(remaining)} remaining',
                           style: AppStyles.caption,
                         ),
-                        Text(
-                          '$daysLeft days left',
-                          style: AppStyles.caption,
-                        ),
+                        Text('$daysLeft days left', style: AppStyles.caption),
                       ],
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Spending by Category
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Spending by Category', style: AppStyles.sectionTitle),
+                  const Text(
+                    'Spending by Category',
+                    style: AppStyles.sectionTitle,
+                  ),
                   Text('Details', style: AppStyles.bodySecondary),
                 ],
               ),
               const SizedBox(height: 24),
-              
+
               if (vm.analyticsTopExpenses.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 32.0),
                   child: Center(
-                    child: Text('No spending data for this period.', style: AppStyles.bodySecondary),
+                    child: Text(
+                      'No spending data for this period.',
+                      style: AppStyles.bodySecondary,
+                    ),
                   ),
                 )
               else ...[
                 Builder(
                   builder: (context) {
-                    final categoryColors = const [AppColors.income, Colors.blue, Colors.purpleAccent, Color(0xFFF87171), Colors.orangeAccent];
+                    final categoryColors = const [
+                      AppColors.income,
+                      Colors.blue,
+                      Colors.purpleAccent,
+                      Color(0xFFF87171),
+                      Colors.orangeAccent,
+                    ];
                     return Column(
                       children: [
                         // Segmented Progress Bar
                         Row(
                           children: vm.analyticsTopExpenses.map((item) {
                             final index = vm.analyticsTopExpenses.indexOf(item);
-                            final flex = totalExpense > 0 ? (item.totalAmount / totalExpense * 100).toInt() : 0;
+                            final flex = totalExpense > 0
+                                ? (item.totalAmount / totalExpense * 100)
+                                      .toInt()
+                                : 0;
                             if (flex <= 0) return const SizedBox.shrink();
                             return Expanded(
                               flex: flex,
                               child: _ProgressSegment(
-                                color: categoryColors[index % categoryColors.length],
+                                color:
+                                    categoryColors[index %
+                                        categoryColors.length],
                                 isFirst: index == 0,
-                                isLast: index == vm.analyticsTopExpenses.length - 1,
+                                isLast:
+                                    index == vm.analyticsTopExpenses.length - 1,
                               ),
                             );
                           }).toList(),
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Category List
                         Container(
                           decoration: BoxDecoration(
@@ -223,26 +278,32 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Column(
                             children: vm.analyticsTopExpenses.map((item) {
-                              final index = vm.analyticsTopExpenses.indexOf(item);
-                              final percentage = totalExpense > 0 
-                                  ? (item.totalAmount / totalExpense * 100).toInt() 
+                              final index = vm.analyticsTopExpenses.indexOf(
+                                item,
+                              );
+                              final percentage = totalExpense > 0
+                                  ? (item.totalAmount / totalExpense * 100)
+                                        .toInt()
                                   : 0;
                               return _CategoryRow(
-                                color: categoryColors[index % categoryColors.length],
+                                color:
+                                    categoryColors[index %
+                                        categoryColors.length],
                                 name: item.category.name,
                                 amount: settings.formatAmount(item.totalAmount),
                                 percentage: '$percentage%',
-                                isLast: index == vm.analyticsTopExpenses.length - 1,
+                                isLast:
+                                    index == vm.analyticsTopExpenses.length - 1,
                               );
                             }).toList(),
                           ),
                         ),
                       ],
                     );
-                  }
+                  },
                 ),
               ],
-              
+
               const SizedBox(height: 40),
             ],
           ),
@@ -256,7 +317,10 @@ class _SegmentedControl extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onChanged;
 
-  const _SegmentedControl({required this.selectedIndex, required this.onChanged});
+  const _SegmentedControl({
+    required this.selectedIndex,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -269,9 +333,21 @@ class _SegmentedControl extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _Segment(title: 'Week', isSelected: selectedIndex == 0, onTap: () => onChanged(0)),
-          _Segment(title: 'Month', isSelected: selectedIndex == 1, onTap: () => onChanged(1)),
-          _Segment(title: 'Year', isSelected: selectedIndex == 2, onTap: () => onChanged(2)),
+          _Segment(
+            title: 'Week',
+            isSelected: selectedIndex == 0,
+            onTap: () => onChanged(0),
+          ),
+          _Segment(
+            title: 'Month',
+            isSelected: selectedIndex == 1,
+            onTap: () => onChanged(1),
+          ),
+          _Segment(
+            title: 'Year',
+            isSelected: selectedIndex == 2,
+            onTap: () => onChanged(2),
+          ),
         ],
       ),
     );
@@ -283,7 +359,11 @@ class _Segment extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _Segment({required this.title, required this.isSelected, required this.onTap});
+  const _Segment({
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +379,9 @@ class _Segment extends StatelessWidget {
         child: Text(
           title,
           style: TextStyle(
-            color: isSelected ? AppColors.backgroundDark : AppColors.textSecondaryDark,
+            color: isSelected
+                ? AppColors.backgroundDark
+                : AppColors.textSecondaryDark,
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
@@ -314,7 +396,11 @@ class _ProgressSegment extends StatelessWidget {
   final bool isFirst;
   final bool isLast;
 
-  const _ProgressSegment({required this.color, this.isFirst = false, this.isLast = false});
+  const _ProgressSegment({
+    required this.color,
+    this.isFirst = false,
+    this.isLast = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -360,18 +446,20 @@ class _CategoryRow extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    name,
-                    style: AppStyles.bodyPrimary,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(name, style: AppStyles.bodyPrimary)),
                 Text(
                   amount,
-                  style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: AppColors.textPrimaryDark,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 SizedBox(
@@ -385,7 +473,8 @@ class _CategoryRow extends StatelessWidget {
               ],
             ),
           ),
-          if (!isLast) const Divider(height: 1, color: AppColors.surfaceContainerLowDark),
+          if (!isLast)
+            const Divider(height: 1, color: AppColors.surfaceContainerLowDark),
         ],
       ),
     );

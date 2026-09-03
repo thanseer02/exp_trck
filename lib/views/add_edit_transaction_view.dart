@@ -38,7 +38,10 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
 
     if (widget.transaction != null) {
       _selectedType = widget.transaction!.type;
-      _amountStr = widget.transaction!.amount.toString().replaceAll(RegExp(r'\.0$'), ''); // Remove .0 if whole number
+      _amountStr = widget.transaction!.amount.toString().replaceAll(
+        RegExp(r'\.0$'),
+        '',
+      ); // Remove .0 if whole number
       _selectedCategoryId = widget.transaction!.categoryId;
       _selectedDate = widget.transaction!.date.toLocal();
       _note = widget.transaction!.note ?? '';
@@ -82,18 +85,18 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
       );
       return;
     }
-    
+
     // Auto-select first category if none selected
     if (_selectedCategoryId == null) {
       final categoryVm = context.read<CategoryViewModel>();
-      final categories = _selectedType == TransactionType.income 
-          ? categoryVm.incomeCategories 
+      final categories = _selectedType == TransactionType.income
+          ? categoryVm.incomeCategories
           : categoryVm.expenseCategories;
-          
+
       if (categories.isNotEmpty) {
         _selectedCategoryId = categories.first.id;
       } else {
-         ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please create a category first')),
         );
         return;
@@ -110,7 +113,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
     );
 
     final vm = context.read<TransactionViewModel>();
-    
+
     if (widget.transaction == null) {
       await vm.addTransaction(newTransaction);
     } else {
@@ -130,10 +133,17 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimaryDark,
+            size: 22,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(widget.transaction == null ? 'New Entry' : 'Edit Entry', style: AppStyles.appBarTitle),
+        title: Text(
+          widget.transaction == null ? 'New Entry' : 'Edit Entry',
+          style: AppStyles.appBarTitle,
+        ),
         actions: [
           if (widget.transaction != null)
             IconButton(
@@ -143,21 +153,33 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: AppColors.surfaceDark,
-                    title: const Text('Delete Transaction', style: AppStyles.bodyPrimary),
-                    content: const Text('Are you sure you want to delete this transaction?', style: AppStyles.bodySecondary),
+                    title: const Text(
+                      'Delete Transaction',
+                      style: AppStyles.bodyPrimary,
+                    ),
+                    content: const Text(
+                      'Are you sure you want to delete this transaction?',
+                      style: AppStyles.bodySecondary,
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel', style: AppStyles.bodySecondary),
+                        child: const Text(
+                          'Cancel',
+                          style: AppStyles.bodySecondary,
+                        ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Delete', style: AppStyles.destructive),
+                        child: const Text(
+                          'Delete',
+                          style: AppStyles.destructive,
+                        ),
                       ),
                     ],
                   ),
                 );
-                
+
                 if (confirm == true && mounted) {
                   final vm = context.read<TransactionViewModel>();
                   await vm.deleteTransaction(widget.transaction!.id!);
@@ -178,7 +200,10 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 8.0,
+                ),
                 child: Column(
                   children: [
                     // Type Toggle
@@ -193,22 +218,27 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                         children: [
                           _TypeToggleBtn(
                             title: 'Expense',
-                            isSelected: _selectedType == TransactionType.expense,
+                            isSelected:
+                                _selectedType == TransactionType.expense,
                             color: const Color(0xFFF87171),
-                            onTap: () => setState(() => _selectedType = TransactionType.expense),
+                            onTap: () => setState(
+                              () => _selectedType = TransactionType.expense,
+                            ),
                           ),
                           _TypeToggleBtn(
                             title: 'Income',
                             isSelected: _selectedType == TransactionType.income,
                             color: AppColors.income,
-                            onTap: () => setState(() => _selectedType = TransactionType.income),
+                            onTap: () => setState(
+                              () => _selectedType = TransactionType.income,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Amount Input
                     Text(
                       '\$$_amountStr',
@@ -221,7 +251,10 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceDark,
                         borderRadius: BorderRadius.circular(16),
@@ -230,60 +263,87 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.credit_card, color: AppColors.textSecondaryDark, size: 14),
+                          Icon(
+                            Icons.credit_card,
+                            color: AppColors.textSecondaryDark,
+                            size: 14,
+                          ),
                           SizedBox(width: 8),
-                          Text('Chase Sapphire...', style: AppStyles.bodySecondary),
+                          Text(
+                            'Chase Sapphire...',
+                            style: AppStyles.bodySecondary,
+                          ),
                           SizedBox(width: 4),
-                          Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondaryDark, size: 14),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            color: AppColors.textSecondaryDark,
+                            size: 14,
+                          ),
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 48),
-                    
+
                     // Categories Grid
                     Consumer<CategoryViewModel>(
                       builder: (context, categoryVm, child) {
-                        final categories = _selectedType == TransactionType.income
+                        final categories =
+                            _selectedType == TransactionType.income
                             ? categoryVm.incomeCategories
                             : categoryVm.expenseCategories;
-                            
+
                         if (categories.isEmpty) {
-                          return const Center(child: Text('No categories found', style: AppStyles.bodySecondary));
+                          return const Center(
+                            child: Text(
+                              'No categories found',
+                              style: AppStyles.bodySecondary,
+                            ),
+                          );
                         }
-                        
+
                         return GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            childAspectRatio: 0.85,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 16,
-                          ),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                childAspectRatio: 0.85,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 16,
+                              ),
                           itemCount: categories.take(8).length,
                           itemBuilder: (context, index) {
                             final category = categories[index];
-                            final isSelected = _selectedCategoryId == category.id;
-                            
+                            final isSelected =
+                                _selectedCategoryId == category.id;
+
                             return GestureDetector(
-                              onTap: () => setState(() => _selectedCategoryId = category.id),
+                              onTap: () => setState(
+                                () => _selectedCategoryId = category.id,
+                              ),
                               child: Column(
                                 children: [
                                   Container(
                                     width: 56,
                                     height: 56,
                                     decoration: BoxDecoration(
-                                      color: isSelected ? AppColors.incomeBg : AppColors.surfaceDark,
+                                      color: isSelected
+                                          ? AppColors.incomeBg
+                                          : AppColors.surfaceDark,
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: isSelected ? AppColors.income : AppColors.borderDark,
+                                        color: isSelected
+                                            ? AppColors.income
+                                            : AppColors.borderDark,
                                         width: isSelected ? 1.5 : 1.0,
                                       ),
                                     ),
                                     child: Icon(
                                       _getIconData(category.icon),
-                                      color: isSelected ? AppColors.income : AppColors.textSecondaryDark,
+                                      color: isSelected
+                                          ? AppColors.income
+                                          : AppColors.textSecondaryDark,
                                       size: 24,
                                     ),
                                   ),
@@ -291,9 +351,13 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                                   Text(
                                     category.name,
                                     style: TextStyle(
-                                      color: isSelected ? AppColors.textPrimaryDark : AppColors.textTertiaryDark,
+                                      color: isSelected
+                                          ? AppColors.textPrimaryDark
+                                          : AppColors.textTertiaryDark,
                                       fontSize: 10,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
                                     ),
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
@@ -306,9 +370,9 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Detail Rows
                     _DetailRow(
                       icon: Icons.calendar_today,
@@ -327,7 +391,13 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                           );
                           if (time != null && mounted) {
                             setState(() {
-                              _selectedDate = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                              _selectedDate = DateTime(
+                                date.year,
+                                date.month,
+                                date.day,
+                                time.hour,
+                                time.minute,
+                              );
                             });
                           }
                         }
@@ -336,14 +406,21 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                     _DetailRow(
                       icon: Icons.receipt_long,
                       label: _note.isEmpty ? 'Add note or receipt...' : _note,
-                      valueColor: _note.isEmpty ? AppColors.textTertiaryDark : AppColors.textPrimaryDark,
+                      valueColor: _note.isEmpty
+                          ? AppColors.textTertiaryDark
+                          : AppColors.textPrimaryDark,
                       onTap: () async {
-                        final textController = TextEditingController(text: _note);
+                        final textController = TextEditingController(
+                          text: _note,
+                        );
                         await showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor: AppColors.surfaceDark,
-                            title: const Text('Add Note', style: AppStyles.bodyPrimary),
+                            title: const Text(
+                              'Add Note',
+                              style: AppStyles.bodyPrimary,
+                            ),
                             content: TextField(
                               controller: textController,
                               style: AppStyles.bodyPrimary,
@@ -375,7 +452,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                 ),
               ),
             ),
-            
+
             // Custom Numpad & Save Button area
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -393,11 +470,18 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.backgroundDark,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       child: Text(
-                        widget.transaction == null ? 'Save Transaction' : 'Update Transaction',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        widget.transaction == null
+                            ? 'Save Transaction'
+                            : 'Update Transaction',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -412,23 +496,39 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'restaurant': return Icons.restaurant;
-      case 'directions_car': return Icons.directions_car;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'receipt': return Icons.receipt;
-      case 'home': return Icons.home;
-      case 'movie': return Icons.movie;
-      case 'local_hospital': return Icons.local_hospital;
-      case 'school': return Icons.school;
-      case 'flight': return Icons.flight;
-      case 'local_grocery_store': return Icons.local_grocery_store;
-      case 'subscriptions': return Icons.subscriptions;
-      case 'attach_money': return Icons.attach_money;
-      case 'work': return Icons.work;
-      case 'business': return Icons.business;
-      case 'card_giftcard': return Icons.card_giftcard;
-      case 'category': 
-      default: return Icons.category_outlined;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'receipt':
+        return Icons.receipt;
+      case 'home':
+        return Icons.home;
+      case 'movie':
+        return Icons.movie;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'school':
+        return Icons.school;
+      case 'flight':
+        return Icons.flight;
+      case 'local_grocery_store':
+        return Icons.local_grocery_store;
+      case 'subscriptions':
+        return Icons.subscriptions;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'work':
+        return Icons.work;
+      case 'business':
+        return Icons.business;
+      case 'card_giftcard':
+        return Icons.card_giftcard;
+      case 'category':
+      default:
+        return Icons.category_outlined;
     }
   }
 }
@@ -439,7 +539,12 @@ class _TypeToggleBtn extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _TypeToggleBtn({required this.title, required this.isSelected, required this.color, required this.onTap});
+  const _TypeToggleBtn({
+    required this.title,
+    required this.isSelected,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -454,7 +559,9 @@ class _TypeToggleBtn extends StatelessWidget {
         child: Text(
           title,
           style: TextStyle(
-            color: isSelected ? AppColors.backgroundDark : AppColors.textSecondaryDark,
+            color: isSelected
+                ? AppColors.backgroundDark
+                : AppColors.textSecondaryDark,
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
@@ -470,7 +577,12 @@ class _DetailRow extends StatelessWidget {
   final Color? valueColor;
   final VoidCallback onTap;
 
-  const _DetailRow({required this.icon, required this.label, this.valueColor, required this.onTap});
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    this.valueColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -493,7 +605,11 @@ class _DetailRow extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textTertiaryDark, size: 20),
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.textTertiaryDark,
+              size: 20,
+            ),
           ],
         ),
       ),

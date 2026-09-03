@@ -6,14 +6,10 @@ import '../models/transaction_type.dart';
 import '../models/category.dart';
 import '../models/monthly_summary.dart';
 import '../models/category_spending.dart';
+import '../models/analytics_period.dart';
 import '../repositories/transaction_repository.dart';
 
-enum TransactionSortOption {
-  newest,
-  oldest,
-  highestAmount,
-  lowestAmount,
-}
+enum TransactionSortOption { newest, oldest, highestAmount, lowestAmount }
 
 class TransactionViewModel extends ChangeNotifier {
   final TransactionRepository _repository;
@@ -42,6 +38,7 @@ class TransactionViewModel extends ChangeNotifier {
     }
     return _cachedGroupedTransactions!;
   }
+
   Map<String, List<Transaction>>? _cachedGroupedTransactions;
 
   List<Transaction> get recentTransactions => _recentTransactions;
@@ -57,12 +54,14 @@ class TransactionViewModel extends ChangeNotifier {
   TransactionSortOption get currentSort => _currentSort;
 
   // Analytics State
+  AnalyticsPeriod _analyticsPeriod = AnalyticsPeriod.month;
   DateTime _analyticsMonth = DateTime.now();
   MonthlySummary? _analyticsMonthlySummary;
   List<CategorySpending> _analyticsTopExpenses = [];
   int _analyticsTransactionCount = 0;
   List<String> _monthlyInsights = [];
-  
+
+  AnalyticsPeriod get analyticsPeriod => _analyticsPeriod;
   DateTime get analyticsMonth => _analyticsMonth;
   MonthlySummary? get analyticsMonthlySummary => _analyticsMonthlySummary;
   List<CategorySpending> get analyticsTopExpenses => _analyticsTopExpenses;
@@ -74,10 +73,10 @@ class TransactionViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
     }
-    
+
     _transactions = await _repository.getAllTransactions();
     _cachedGroupedTransactions = null;
-    
+
     if (notify) {
       _isLoading = false;
       notifyListeners();
@@ -102,21 +101,78 @@ class TransactionViewModel extends ChangeNotifier {
     }
   }
 
+  void setAnalyticsPeriod(AnalyticsPeriod period) {
+    _analyticsPeriod = period;
+    loadAnalyticsData();
+  }
+
   Future<void> loadAnalyticsData({bool notify = true}) async {
     if (notify) {
       _isLoading = true;
       notifyListeners();
     }
 
-    _analyticsMonthlySummary = await _repository.getMonthlySummary(_analyticsMonth);
-    _analyticsTopExpenses = await _repository.getTopExpenses(_analyticsMonth, limit: 100);
-    _analyticsTransactionCount = await _repository.getTransactionCount(_analyticsMonth);
+    DateTime start;
+    DateTime end;
+    final now = DateTime.now();
 
-    // Load previous month data
-    final prevMonth = DateTime(_analyticsMonth.year, _analyticsMonth.month - 1);
-    final prevSummary = await _repository.getMonthlySummary(prevMonth);
-    final prevTopExpenses = await _repository.getTopExpenses(prevMonth, limit: 100);
-    
+    switch (_analyticsPeriod) {
+      case AnalyticsPeriod.week:
+        // Start of week (Monday)
+        final daysToSubtract = now.weekday - 1;
+        start = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(Duration(days: daysToSubtract));
+        end = start.add(
+          const Duration(days: 6, hours: 23, minutes: 59, seconds: 59),
+        );
+        break;
+      case AnalyticsPeriod.month:
+        start = DateTime(now.year, now.month, 1);
+        end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+        break;
+      case AnalyticsPeriod.year:
+        start = DateTime(now.year, 1, 1);
+        end = DateTime(now.year, 12, 31, 23, 59, 59);
+        break;
+    }
+
+    _analyticsMonth = start;
+
+    _analyticsMonthlySummary = await _repository.getSummaryForPeriod(
+      start,
+      end,
+    );
+    _analyticsTopExpenses = await _repository.getTopExpensesForPeriod(
+      start,
+      end,
+      limit: 100,
+    );
+    _analyticsTransactionCount = await _repository.getTransactionCountForPeriod(
+      start,
+      end,
+    );
+
+    // Insights logic is still based on previous month as a generic fallback for now,
+    // or we could adjust it to previous period. For simplicity, just use previous period length.
+    final duration = end.difference(start);
+    final prevStart = start
+        .subtract(duration)
+        .subtract(const Duration(seconds: 1));
+    final prevEnd = start.subtract(const Duration(seconds: 1));
+
+    final prevSummary = await _repository.getSummaryForPeriod(
+      prevStart,
+      prevEnd,
+    );
+    final prevTopExpenses = await _repository.getTopExpensesForPeriod(
+      prevStart,
+      prevEnd,
+      limit: 100,
+    );
+
     _generateInsights(prevSummary, prevTopExpenses);
 
     if (notify) {
@@ -128,7 +184,7 @@ class TransactionViewModel extends ChangeNotifier {
   Future<void> refreshAll() async {
     _isLoading = true;
     notifyListeners();
-    
+
     await Future.wait([
       loadTransactions(notify: false),
       loadDashboardData(notify: false),
@@ -139,7 +195,10 @@ class TransactionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _generateInsights(MonthlySummary prevSummary, List<CategorySpending> prevTopExpenses) {
+  void _generateInsights(
+    MonthlySummary prevSummary,
+    List<CategorySpending> prevTopExpenses,
+  ) {
     _monthlyInsights = [];
     final current = _analyticsMonthlySummary;
     if (current == null) return;
@@ -152,17 +211,28 @@ class TransactionViewModel extends ChangeNotifier {
     // Total Expenses Insight
     if (current.totalExpense > prevSummary.totalExpense) {
       final diff = current.totalExpense - prevSummary.totalExpense;
-      _monthlyInsights.add('You spent \$${diff.toStringAsFixed(2)} more this month.');
+      _monthlyInsights.add(
+        'You spent \$${diff.toStringAsFixed(2)} more this month.',
+      );
     } else if (current.totalExpense < prevSummary.totalExpense) {
       if (prevSummary.totalExpense > 0) {
-        final percent = ((prevSummary.totalExpense - current.totalExpense) / prevSummary.totalExpense * 100).toInt();
+        final percent =
+            ((prevSummary.totalExpense - current.totalExpense) /
+                    prevSummary.totalExpense *
+                    100)
+                .toInt();
         _monthlyInsights.add('Your total expenses decreased by $percent%.');
       }
     }
 
     // Total Income Insight
-    if (current.totalIncome > prevSummary.totalIncome && prevSummary.totalIncome > 0) {
-      final percent = ((current.totalIncome - prevSummary.totalIncome) / prevSummary.totalIncome * 100).toInt();
+    if (current.totalIncome > prevSummary.totalIncome &&
+        prevSummary.totalIncome > 0) {
+      final percent =
+          ((current.totalIncome - prevSummary.totalIncome) /
+                  prevSummary.totalIncome *
+                  100)
+              .toInt();
       _monthlyInsights.add('Your income increased by $percent% this month!');
     }
 
@@ -170,17 +240,24 @@ class TransactionViewModel extends ChangeNotifier {
     int categoryInsightsAdded = 0;
     for (var currentSpending in _analyticsTopExpenses) {
       if (categoryInsightsAdded >= 2) break;
-      
+
       try {
-        final prevSpending = prevTopExpenses.firstWhere((s) => s.category.id == currentSpending.category.id);
-        
+        final prevSpending = prevTopExpenses.firstWhere(
+          (s) => s.category.id == currentSpending.category.id,
+        );
+
         final diff = currentSpending.totalAmount - prevSpending.totalAmount;
-        if (diff.abs() > 50) { // Only show significant changes
+        if (diff.abs() > 50) {
+          // Only show significant changes
           final catName = currentSpending.category.name;
           if (diff > 0) {
-            _monthlyInsights.add('$catName spending increased by \$${diff.toStringAsFixed(0)}.');
+            _monthlyInsights.add(
+              '$catName spending increased by \$${diff.toStringAsFixed(0)}.',
+            );
           } else {
-            _monthlyInsights.add('$catName spending decreased by \$${diff.abs().toStringAsFixed(0)}.');
+            _monthlyInsights.add(
+              '$catName spending decreased by \$${diff.abs().toStringAsFixed(0)}.',
+            );
           }
           categoryInsightsAdded++;
         }
@@ -265,16 +342,21 @@ class TransactionViewModel extends ChangeNotifier {
 
     // Apply Category Filter
     if (_filterCategory != null) {
-      result = result.where((t) => t.categoryId == _filterCategory!.id).toList();
+      result = result
+          .where((t) => t.categoryId == _filterCategory!.id)
+          .toList();
     }
 
     // Apply Date Filter
     if (_filterDate != null) {
-      result = result.where((t) => 
-        t.date.year == _filterDate!.year &&
-        t.date.month == _filterDate!.month &&
-        t.date.day == _filterDate!.day
-      ).toList();
+      result = result
+          .where(
+            (t) =>
+                t.date.year == _filterDate!.year &&
+                t.date.month == _filterDate!.month &&
+                t.date.day == _filterDate!.day,
+          )
+          .toList();
     }
 
     // Apply Search
@@ -304,7 +386,9 @@ class TransactionViewModel extends ChangeNotifier {
     return result;
   }
 
-  Map<String, List<Transaction>> _groupTransactions(List<Transaction> transactions) {
+  Map<String, List<Transaction>> _groupTransactions(
+    List<Transaction> transactions,
+  ) {
     final Map<String, List<Transaction>> groups = {};
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -324,7 +408,7 @@ class TransactionViewModel extends ChangeNotifier {
       if (!groups.containsKey(key)) {
         groups[key] = [];
       }
-        groups[key]!.add(tx);
+      groups[key]!.add(tx);
     }
     return groups;
   }

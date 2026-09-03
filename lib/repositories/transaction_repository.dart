@@ -28,17 +28,19 @@ class TransactionRepository {
 
   Future<int> addTransaction(domain.Transaction tx) async {
     try {
-      return await _db.into(_db.transactions).insert(
-        db.TransactionsCompanion.insert(
-          type: tx.type.name,
-          amount: tx.amount,
-          categoryId: tx.categoryId,
-          note: Value(tx.note),
-          date: tx.date,
-          createdAt: Value(tx.createdAt ?? DateTime.now()),
-          updatedAt: Value(tx.updatedAt ?? DateTime.now()),
-        )
-      );
+      return await _db
+          .into(_db.transactions)
+          .insert(
+            db.TransactionsCompanion.insert(
+              type: tx.type.name,
+              amount: tx.amount,
+              categoryId: tx.categoryId,
+              note: Value(tx.note),
+              date: tx.date,
+              createdAt: Value(tx.createdAt ?? DateTime.now()),
+              updatedAt: Value(tx.updatedAt ?? DateTime.now()),
+            ),
+          );
     } catch (e) {
       throw Exception('Failed to add transaction: $e');
     }
@@ -47,17 +49,19 @@ class TransactionRepository {
   Future<bool> updateTransaction(domain.Transaction tx) async {
     if (tx.id == null) return false;
     try {
-      return await _db.update(_db.transactions).replace(
-        db.TransactionsCompanion(
-          id: Value(tx.id!),
-          type: Value(tx.type.name),
-          amount: Value(tx.amount),
-          categoryId: Value(tx.categoryId),
-          note: Value(tx.note),
-          date: Value(tx.date),
-          updatedAt: Value(DateTime.now()),
-        )
-      );
+      return await _db
+          .update(_db.transactions)
+          .replace(
+            db.TransactionsCompanion(
+              id: Value(tx.id!),
+              type: Value(tx.type.name),
+              amount: Value(tx.amount),
+              categoryId: Value(tx.categoryId),
+              note: Value(tx.note),
+              date: Value(tx.date),
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
     } catch (e) {
       throw Exception('Failed to update transaction: $e');
     }
@@ -89,21 +93,30 @@ class TransactionRepository {
 
   Future<List<domain.Transaction>> getAllTransactions() async {
     try {
-      final results = await (_db.select(_db.transactions)
-        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
-        .get();
+      final results =
+          await (_db.select(_db.transactions)..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.date, mode: OrderingMode.desc),
+              ]))
+              .get();
       return results.map(_mapTransaction).toList();
     } catch (e) {
       throw Exception('Failed to load transactions: $e');
     }
   }
 
-  Future<List<domain.Transaction>> getRecentTransactions({int limit = 5}) async {
+  Future<List<domain.Transaction>> getRecentTransactions({
+    int limit = 5,
+  }) async {
     try {
-      final results = await (_db.select(_db.transactions)
-        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)])
-        ..limit(limit))
-        .get();
+      final results =
+          await (_db.select(_db.transactions)
+                ..orderBy([
+                  (t) =>
+                      OrderingTerm(expression: t.date, mode: OrderingMode.desc),
+                ])
+                ..limit(limit))
+              .get();
       return results.map(_mapTransaction).toList();
     } catch (e) {
       throw Exception('Failed to load recent transactions: $e');
@@ -112,7 +125,9 @@ class TransactionRepository {
 
   Future<domain.Transaction?> getTransactionById(int id) async {
     try {
-      final result = await (_db.select(_db.transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
+      final result = await (_db.select(
+        _db.transactions,
+      )..where((t) => t.id.equals(id))).getSingleOrNull();
       if (result == null) return null;
       return _mapTransaction(result);
     } catch (e) {
@@ -128,7 +143,9 @@ class TransactionRepository {
       final query = _db.selectOnly(_db.transactions)
         ..addColumns([amountExp])
         ..where(_db.transactions.type.equals('income'));
-      final result = await query.map((row) => row.read(amountExp)).getSingleOrNull();
+      final result = await query
+          .map((row) => row.read(amountExp))
+          .getSingleOrNull();
       return result ?? 0.0;
     } catch (e) {
       throw Exception('Failed to calculate total income: $e');
@@ -139,12 +156,17 @@ class TransactionRepository {
     try {
       final start = DateTime(month.year, month.month, 1);
       final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
-      
+
       final amountExp = _db.transactions.amount.sum();
       final query = _db.selectOnly(_db.transactions)
         ..addColumns([amountExp])
-        ..where(_db.transactions.type.equals('income') & _db.transactions.date.isBetweenValues(start, end));
-      final result = await query.map((row) => row.read(amountExp)).getSingleOrNull();
+        ..where(
+          _db.transactions.type.equals('income') &
+              _db.transactions.date.isBetweenValues(start, end),
+        );
+      final result = await query
+          .map((row) => row.read(amountExp))
+          .getSingleOrNull();
       return result ?? 0.0;
     } catch (e) {
       throw Exception('Failed to calculate monthly income: $e');
@@ -155,12 +177,14 @@ class TransactionRepository {
     try {
       final start = DateTime(month.year, month.month, 1);
       final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
-      
+
       final countExp = _db.transactions.id.count();
       final query = _db.selectOnly(_db.transactions)
         ..addColumns([countExp])
         ..where(_db.transactions.date.isBetweenValues(start, end));
-      final result = await query.map((row) => row.read(countExp)).getSingleOrNull();
+      final result = await query
+          .map((row) => row.read(countExp))
+          .getSingleOrNull();
       return result ?? 0;
     } catch (e) {
       throw Exception('Failed to calculate transaction count: $e');
@@ -173,7 +197,9 @@ class TransactionRepository {
       final query = _db.selectOnly(_db.transactions)
         ..addColumns([countExp])
         ..where(_db.transactions.categoryId.equals(categoryId));
-      final result = await query.map((row) => row.read(countExp)).getSingleOrNull();
+      final result = await query
+          .map((row) => row.read(countExp))
+          .getSingleOrNull();
       return (result ?? 0) > 0;
     } catch (e) {
       throw Exception('Failed to check category usage: $e');
@@ -188,7 +214,9 @@ class TransactionRepository {
       final query = _db.selectOnly(_db.transactions)
         ..addColumns([amountExp])
         ..where(_db.transactions.type.equals('expense'));
-      final result = await query.map((row) => row.read(amountExp)).getSingleOrNull();
+      final result = await query
+          .map((row) => row.read(amountExp))
+          .getSingleOrNull();
       return result ?? 0.0;
     } catch (e) {
       throw Exception('Failed to calculate total expenses: $e');
@@ -199,12 +227,17 @@ class TransactionRepository {
     try {
       final start = DateTime(month.year, month.month, 1);
       final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
-      
+
       final amountExp = _db.transactions.amount.sum();
       final query = _db.selectOnly(_db.transactions)
         ..addColumns([amountExp])
-        ..where(_db.transactions.type.equals('expense') & _db.transactions.date.isBetweenValues(start, end));
-      final result = await query.map((row) => row.read(amountExp)).getSingleOrNull();
+        ..where(
+          _db.transactions.type.equals('expense') &
+              _db.transactions.date.isBetweenValues(start, end),
+        );
+      final result = await query
+          .map((row) => row.read(amountExp))
+          .getSingleOrNull();
       return result ?? 0.0;
     } catch (e) {
       throw Exception('Failed to calculate monthly expenses: $e');
@@ -225,28 +258,169 @@ class TransactionRepository {
 
   // --- Analytics ---
 
-  Future<List<CategorySpending>> getExpensesByCategory() async {
+  // --- Period Analytics Methods ---
+
+  Future<double> getIncomeForPeriod(DateTime start, DateTime end) async {
+    try {
+      final amountExp = _db.transactions.amount.sum();
+      final query = _db.selectOnly(_db.transactions)
+        ..addColumns([amountExp])
+        ..where(
+          _db.transactions.type.equals('income') &
+              _db.transactions.date.isBetweenValues(start, end),
+        );
+      final result = await query
+          .map((row) => row.read(amountExp))
+          .getSingleOrNull();
+      return result ?? 0.0;
+    } catch (e) {
+      throw Exception('Failed to calculate income for period: $e');
+    }
+  }
+
+  Future<double> getExpensesForPeriod(DateTime start, DateTime end) async {
+    try {
+      final amountExp = _db.transactions.amount.sum();
+      final query = _db.selectOnly(_db.transactions)
+        ..addColumns([amountExp])
+        ..where(
+          _db.transactions.type.equals('expense') &
+              _db.transactions.date.isBetweenValues(start, end),
+        );
+      final result = await query
+          .map((row) => row.read(amountExp))
+          .getSingleOrNull();
+      return result ?? 0.0;
+    } catch (e) {
+      throw Exception('Failed to calculate expenses for period: $e');
+    }
+  }
+
+  Future<MonthlySummary> getSummaryForPeriod(
+    DateTime start,
+    DateTime end,
+  ) async {
+    try {
+      final income = await getIncomeForPeriod(start, end);
+      final expense = await getExpensesForPeriod(start, end);
+
+      return MonthlySummary(
+        month: start,
+        totalIncome: income,
+        totalExpense: expense,
+        balance: income - expense,
+      );
+    } catch (e) {
+      throw Exception('Failed to calculate summary for period: $e');
+    }
+  }
+
+  Future<List<CategorySpending>> getTopExpensesForPeriod(
+    DateTime start,
+    DateTime end, {
+    int limit = 5,
+  }) async {
     try {
       final amountExp = _db.transactions.amount.sum();
       final query = _db.selectOnly(_db.transactions)
         ..join([
-          innerJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId))
+          innerJoin(
+            _db.categories,
+            _db.categories.id.equalsExp(_db.transactions.categoryId),
+          ),
         ])
-        ..addColumns([_db.categories.id, _db.categories.name, _db.categories.icon, _db.categories.type, _db.categories.isDefault, _db.categories.createdAt, amountExp])
-        ..where(_db.transactions.type.equals('expense'))
-        ..groupBy([_db.categories.id]);
-      
+        ..addColumns([
+          _db.categories.id,
+          _db.categories.name,
+          _db.categories.icon,
+          _db.categories.type,
+          _db.categories.isDefault,
+          _db.categories.createdAt,
+          amountExp,
+        ])
+        ..where(
+          _db.transactions.type.equals('expense') &
+              _db.transactions.date.isBetweenValues(start, end),
+        )
+        ..groupBy([_db.categories.id])
+        ..orderBy([
+          OrderingTerm(expression: amountExp, mode: OrderingMode.desc),
+        ])
+        ..limit(limit);
+
       final results = await query.get();
       return results.map((row) {
         final category = domain.Category(
           id: row.read(_db.categories.id),
           name: row.read(_db.categories.name)!,
           icon: row.read(_db.categories.icon)!,
-          type: TransactionTypeExtension.fromString(row.read(_db.categories.type)!),
+          type: TransactionTypeExtension.fromString(
+            row.read(_db.categories.type)!,
+          ),
           isDefault: row.read(_db.categories.isDefault)!,
           createdAt: row.read(_db.categories.createdAt),
         );
-        
+
+        return CategorySpending(
+          category: category,
+          totalAmount: row.read(amountExp) ?? 0.0,
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to get top expenses for period: $e');
+    }
+  }
+
+  Future<int> getTransactionCountForPeriod(DateTime start, DateTime end) async {
+    try {
+      final countExp = _db.transactions.id.count();
+      final query = _db.selectOnly(_db.transactions)
+        ..addColumns([countExp])
+        ..where(_db.transactions.date.isBetweenValues(start, end));
+      final result = await query
+          .map((row) => row.read(countExp))
+          .getSingleOrNull();
+      return result ?? 0;
+    } catch (e) {
+      throw Exception('Failed to calculate transaction count for period: $e');
+    }
+  }
+
+  Future<List<CategorySpending>> getExpensesByCategory() async {
+    try {
+      final amountExp = _db.transactions.amount.sum();
+      final query = _db.selectOnly(_db.transactions)
+        ..join([
+          innerJoin(
+            _db.categories,
+            _db.categories.id.equalsExp(_db.transactions.categoryId),
+          ),
+        ])
+        ..addColumns([
+          _db.categories.id,
+          _db.categories.name,
+          _db.categories.icon,
+          _db.categories.type,
+          _db.categories.isDefault,
+          _db.categories.createdAt,
+          amountExp,
+        ])
+        ..where(_db.transactions.type.equals('expense'))
+        ..groupBy([_db.categories.id]);
+
+      final results = await query.get();
+      return results.map((row) {
+        final category = domain.Category(
+          id: row.read(_db.categories.id),
+          name: row.read(_db.categories.name)!,
+          icon: row.read(_db.categories.icon)!,
+          type: TransactionTypeExtension.fromString(
+            row.read(_db.categories.type)!,
+          ),
+          isDefault: row.read(_db.categories.isDefault)!,
+          createdAt: row.read(_db.categories.createdAt),
+        );
+
         return CategorySpending(
           category: category,
           totalAmount: row.read(amountExp) ?? 0.0,
@@ -257,33 +431,54 @@ class TransactionRepository {
     }
   }
 
-  Future<List<CategorySpending>> getTopExpenses(DateTime month, {int limit = 3}) async {
+  Future<List<CategorySpending>> getTopExpenses(
+    DateTime month, {
+    int limit = 3,
+  }) async {
     try {
       final start = DateTime(month.year, month.month, 1);
       final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
-      
+
       final amountExp = _db.transactions.amount.sum();
       final query = _db.selectOnly(_db.transactions)
         ..join([
-          innerJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId))
+          innerJoin(
+            _db.categories,
+            _db.categories.id.equalsExp(_db.transactions.categoryId),
+          ),
         ])
-        ..addColumns([_db.categories.id, _db.categories.name, _db.categories.icon, _db.categories.type, _db.categories.isDefault, _db.categories.createdAt, amountExp])
-        ..where(_db.transactions.type.equals('expense') & _db.transactions.date.isBetweenValues(start, end))
+        ..addColumns([
+          _db.categories.id,
+          _db.categories.name,
+          _db.categories.icon,
+          _db.categories.type,
+          _db.categories.isDefault,
+          _db.categories.createdAt,
+          amountExp,
+        ])
+        ..where(
+          _db.transactions.type.equals('expense') &
+              _db.transactions.date.isBetweenValues(start, end),
+        )
         ..groupBy([_db.categories.id])
-        ..orderBy([OrderingTerm(expression: amountExp, mode: OrderingMode.desc)])
+        ..orderBy([
+          OrderingTerm(expression: amountExp, mode: OrderingMode.desc),
+        ])
         ..limit(limit);
-      
+
       final results = await query.get();
       return results.map((row) {
         final category = domain.Category(
           id: row.read(_db.categories.id),
           name: row.read(_db.categories.name)!,
           icon: row.read(_db.categories.icon)!,
-          type: TransactionTypeExtension.fromString(row.read(_db.categories.type)!),
+          type: TransactionTypeExtension.fromString(
+            row.read(_db.categories.type)!,
+          ),
           isDefault: row.read(_db.categories.isDefault)!,
           createdAt: row.read(_db.categories.createdAt),
         );
-        
+
         return CategorySpending(
           category: category,
           totalAmount: row.read(amountExp) ?? 0.0,
@@ -298,7 +493,7 @@ class TransactionRepository {
     try {
       final expenses = await getExpensesByCategory();
       if (expenses.isEmpty) return null;
-      
+
       expenses.sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
       return expenses.first;
     } catch (e) {
@@ -313,10 +508,11 @@ class TransactionRepository {
 
       final expenses = await getExpensesByCategory();
       final Map<int, double> percentages = {};
-      
+
       for (final spending in expenses) {
         if (spending.category.id != null) {
-          percentages[spending.category.id!] = (spending.totalAmount / totalExpense) * 100;
+          percentages[spending.category.id!] =
+              (spending.totalAmount / totalExpense) * 100;
         }
       }
       return percentages;
@@ -330,7 +526,7 @@ class TransactionRepository {
       final income = await getMonthlyIncome(month);
       final expense = await getMonthlyExpenses(month);
       final balance = income - expense;
-      
+
       return MonthlySummary(
         totalIncome: income,
         totalExpense: expense,
