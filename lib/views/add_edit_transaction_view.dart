@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/transaction.dart';
 import '../models/transaction_type.dart';
 import '../models/category.dart';
-import '../repositories/category_repository.dart';
+import '../viewmodels/category_viewmodel.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 
 class AddEditTransactionView extends StatefulWidget {
@@ -23,9 +23,6 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
   late DateTime _selectedDate;
   String? _note;
   
-  List<Category> _categories = [];
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -39,53 +36,13 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
       _selectedType = TransactionType.expense;
       _selectedDate = DateTime.now();
     }
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    try {
-      final repository = context.read<CategoryRepository>();
-      final allCategories = await repository.getCategories();
-      
-      if (mounted) {
-        setState(() {
-          _categories = allCategories.where((c) => c.type == _selectedType).toList();
-          
-          if (widget.transaction != null && _selectedCategory == null) {
-            // Initial load for edit mode
-            try {
-              _selectedCategory = _categories.firstWhere((c) => c.id == widget.transaction!.categoryId);
-            } catch (_) {
-              _selectedCategory = _categories.isNotEmpty ? _categories.first : null;
-            }
-          } else {
-             // Creating new or switching types
-            if (_categories.isNotEmpty && !_categories.contains(_selectedCategory)) {
-              _selectedCategory = _categories.first;
-            }
-          }
-          
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load categories.')),
-        );
-      }
-    }
   }
 
   void _onTypeChanged(TransactionType type) {
     setState(() {
       _selectedType = type;
-      _isLoading = true;
+      _selectedCategory = null;
     });
-    _loadCategories();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -190,7 +147,29 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
 
   @override
   Widget build(BuildContext context) {
+    final catVM = context.watch<CategoryViewModel>();
     final isEdit = widget.transaction != null;
+    
+    List<Category> categories = _selectedType == TransactionType.expense 
+        ? catVM.expenseCategories 
+        : catVM.incomeCategories;
+        
+    if (!catVM.isLoading && categories.isNotEmpty) {
+      if (_selectedCategory == null) {
+        if (isEdit) {
+          try {
+            _selectedCategory = categories.firstWhere((c) => c.id == widget.transaction!.categoryId);
+          } catch (_) {
+            _selectedCategory = categories.first;
+          }
+        } else {
+          _selectedCategory = categories.first;
+        }
+      } else if (!categories.any((c) => c.id == _selectedCategory!.id)) {
+        _selectedCategory = categories.first;
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Transaction' : 'Add Transaction'),
@@ -202,7 +181,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
             ),
         ],
       ),
-      body: _isLoading
+      body: catVM.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
@@ -266,7 +245,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                             child: DropdownButton<Category>(
                               value: _selectedCategory,
                               isDense: true,
-                              items: _categories.map((Category category) {
+                              items: categories.map((Category category) {
                                 return DropdownMenuItem<Category>(
                                   value: category,
                                   child: Text(category.name),

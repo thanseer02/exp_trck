@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'viewmodels/transaction_viewmodel.dart';
+import 'viewmodels/category_viewmodel.dart';
 import 'views/main_navigation_view.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
@@ -22,6 +23,12 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => TransactionViewModel(context.read<TransactionRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CategoryViewModel(
+            context.read<CategoryRepository>(),
+            context.read<TransactionRepository>(),
+          )..loadCategories(),
         ),
       ],
       child: const ExpenseTrackerApp(),
