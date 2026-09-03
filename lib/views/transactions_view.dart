@@ -239,7 +239,7 @@ class _TransactionsViewState extends State<TransactionsView> {
                                   title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : tx.type.name.toUpperCase()),
                                   subtitle: Text(tx.date.toLocal().toString().split(' ')[0]),
                                   trailing: Text(
-                                    '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().currencySymbol}${tx.amount.toStringAsFixed(2)}',
+                                    '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: isIncome ? Colors.green : Colors.red,

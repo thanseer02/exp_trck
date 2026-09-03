@@ -118,7 +118,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                   const SizedBox(height: 8),
                   Center(
                     child: Text(
-                      '${context.read<SettingsViewModel>().currencySymbol}${totalExpense.toStringAsFixed(2)}',
+                      context.read<SettingsViewModel>().formatAmount(totalExpense),
                       style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.red),
                     ),
                   ),
@@ -133,10 +133,10 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 2,
                     children: [
-                      _buildMetricCard('Total Income', '${context.read<SettingsViewModel>().currencySymbol}${summary?.totalIncome.toStringAsFixed(2) ?? '0.00'}', Colors.green),
-                      _buildMetricCard('Balance', '${context.read<SettingsViewModel>().currencySymbol}${summary?.balance.toStringAsFixed(2) ?? '0.00'}', Colors.deepPurple),
+                      _buildMetricCard('Total Income', context.read<SettingsViewModel>().formatAmount(summary?.totalIncome ?? 0), Colors.green),
+                      _buildMetricCard('Balance', context.read<SettingsViewModel>().formatAmount(summary?.balance ?? 0), Colors.deepPurple),
                       _buildMetricCard('Transactions', '${vm.analyticsTransactionCount}', Colors.blue),
-                      _buildMetricCard('Avg Expense', '${context.read<SettingsViewModel>().currencySymbol}${averageExpense.toStringAsFixed(2)}', Colors.orange),
+                      _buildMetricCard('Avg Expense', context.read<SettingsViewModel>().formatAmount(averageExpense), Colors.orange),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -216,7 +216,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                               ),
                             ),
                             Text(
-                              '${context.read<SettingsViewModel>().currencySymbol}${topExpenses.first.totalAmount.toStringAsFixed(2)}',
+                              context.read<SettingsViewModel>().formatAmount(topExpenses.first.totalAmount),
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
                             ),
                           ],
@@ -260,7 +260,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                                 ),
                                 Row(
                                   children: [
-                                    Text('${context.read<SettingsViewModel>().currencySymbol}${spending.totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    Text(context.read<SettingsViewModel>().formatAmount(spending.totalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
                                     const SizedBox(width: 8),
                                     Text('${percentage.toStringAsFixed(1)}%', style: const TextStyle(color: Colors.grey)),
                                   ],

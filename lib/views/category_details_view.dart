@@ -85,7 +85,7 @@ class CategoryDetailsView extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${context.read<SettingsViewModel>().currencySymbol}${totalSpent.toStringAsFixed(2)}',
+                  context.read<SettingsViewModel>().formatAmount(totalSpent),
                   style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: color),
                 ),
                 const SizedBox(height: 24),
@@ -94,7 +94,7 @@ class CategoryDetailsView extends StatelessWidget {
                   children: [
                     _buildStatCol('Transactions', '$txCount'),
                     Container(height: 30, width: 1, color: Colors.grey.shade300),
-                    _buildStatCol('Avg Transaction', '${context.read<SettingsViewModel>().currencySymbol}${avgTx.toStringAsFixed(2)}'),
+                    _buildStatCol('Avg Transaction', context.read<SettingsViewModel>().formatAmount(avgTx)),
                   ],
                 ),
               ],
@@ -131,7 +131,7 @@ class CategoryDetailsView extends StatelessWidget {
                           title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name),
                           subtitle: Text(DateFormat.yMMMd().format(tx.date.toLocal())),
                           trailing: Text(
-                            '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().currencySymbol}${tx.amount.toStringAsFixed(2)}',
+                            '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: color,

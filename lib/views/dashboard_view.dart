@@ -72,7 +72,7 @@ class _DashboardViewState extends State<DashboardView> {
                   const Text('Total Balance', style: TextStyle(fontSize: 16, color: Colors.grey)),
                   const SizedBox(height: 8),
                   Text(
-                    '${context.read<SettingsViewModel>().currencySymbol}${viewModel.balance.toStringAsFixed(2)}',
+                    context.read<SettingsViewModel>().formatAmount(viewModel.balance),
                     style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold, letterSpacing: -1.0),
                   ),
                 ],
@@ -100,7 +100,7 @@ class _DashboardViewState extends State<DashboardView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${context.read<SettingsViewModel>().currencySymbol}${viewModel.monthlySummary?.totalIncome.toStringAsFixed(2) ?? '0.00'}',
+                            context.read<SettingsViewModel>().formatAmount(viewModel.monthlySummary?.totalIncome ?? 0),
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -126,7 +126,7 @@ class _DashboardViewState extends State<DashboardView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${context.read<SettingsViewModel>().currencySymbol}${viewModel.monthlySummary?.totalExpense.toStringAsFixed(2) ?? '0.00'}',
+                            context.read<SettingsViewModel>().formatAmount(viewModel.monthlySummary?.totalExpense ?? 0),
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -176,7 +176,7 @@ class _DashboardViewState extends State<DashboardView> {
                         ],
                       ),
                       Text(
-                        '${context.read<SettingsViewModel>().currencySymbol}${spending.totalAmount.toStringAsFixed(2)}',
+                        context.read<SettingsViewModel>().formatAmount(spending.totalAmount),
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ],
@@ -220,7 +220,7 @@ class _DashboardViewState extends State<DashboardView> {
                     title: Text(tx.note != null && tx.note!.isNotEmpty ? tx.note! : tx.type.name.toUpperCase()),
                     subtitle: Text(tx.date.toLocal().toString().split(' ')[0]),
                     trailing: Text(
-                      '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().currencySymbol}${tx.amount.toStringAsFixed(2)}',
+                      '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: isIncome ? Colors.green : Colors.red,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:intl/intl.dart';
+
 class SettingsViewModel extends ChangeNotifier {
   final SharedPreferences _prefs;
   
@@ -17,6 +19,15 @@ class SettingsViewModel extends ChangeNotifier {
   String get currencySymbol => _currencySymbol;
   ThemeMode get themeMode => _themeMode;
   
+  String formatAmount(double amount) {
+    final format = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: _currencySymbol,
+      decimalDigits: amount.truncateToDouble() == amount ? 0 : 2,
+    );
+    return format.format(amount);
+  }
+
   void _loadSettings() {
     _currencySymbol = _prefs.getString(_currencyKey) ?? '₹';
     
