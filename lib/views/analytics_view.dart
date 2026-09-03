@@ -83,13 +83,17 @@ class _AnalyticsViewState extends State<AnalyticsView> {
       appBar: AppBar(
         title: const Text('Spending Analytics'),
       ),
-      body: vm.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: () => vm.loadAnalyticsData(),
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
+      body: SafeArea(
+        child: vm.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: () => vm.loadAnalyticsData(),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: ListView(
+                      padding: const EdgeInsets.all(16.0),
+                      children: [
                   // Month Selector
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -297,8 +301,12 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                   }),
                   ]
                 ],
+                ],
               ),
+             ),
             ),
+           ),
+         ),
     );
   }
 

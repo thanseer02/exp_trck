@@ -60,11 +60,15 @@ class _DashboardViewState extends State<DashboardView> {
       appBar: AppBar(
         title: const Text('Dashboard'),
       ),
-      body: RefreshIndicator(
-        onRefresh: () => viewModel.loadDashboardData(),
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => viewModel.loadDashboardData(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
             // Balance Section
             Center(
               child: Column(
@@ -232,7 +236,9 @@ class _DashboardViewState extends State<DashboardView> {
               }),
           ],
         ),
+       ),
       ),
+     ),
     );
   }
 }

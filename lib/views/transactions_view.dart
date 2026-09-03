@@ -114,9 +114,13 @@ class _TransactionsViewState extends State<TransactionsView> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search Bar
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                // Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
@@ -253,7 +257,10 @@ class _TransactionsViewState extends State<TransactionsView> {
                         },
                       ),
           ),
-        ],
+          ],
+            ),
+          ),
+        ),
       ),
     );
   }
