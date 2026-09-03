@@ -212,6 +212,43 @@ class TransactionRepository {
     }
   }
 
+  Future<List<CategorySpending>> getTopExpenses(DateTime month, {int limit = 3}) async {
+    try {
+      final start = DateTime(month.year, month.month, 1);
+      final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+      
+      final amountExp = _db.transactions.amount.sum();
+      final query = _db.selectOnly(_db.transactions)
+        ..join([
+          innerJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId))
+        ])
+        ..addColumns([_db.categories.id, _db.categories.name, _db.categories.icon, _db.categories.type, _db.categories.isDefault, _db.categories.createdAt, amountExp])
+        ..where(_db.transactions.type.equals('expense') & _db.transactions.date.isBetweenValues(start, end))
+        ..groupBy([_db.categories.id])
+        ..orderBy([OrderingTerm(expression: amountExp, mode: OrderingMode.desc)])
+        ..limit(limit);
+      
+      final results = await query.get();
+      return results.map((row) {
+        final category = domain.Category(
+          id: row.read(_db.categories.id),
+          name: row.read(_db.categories.name)!,
+          icon: row.read(_db.categories.icon)!,
+          type: TransactionTypeExtension.fromString(row.read(_db.categories.type)!),
+          isDefault: row.read(_db.categories.isDefault)!,
+          createdAt: row.read(_db.categories.createdAt),
+        );
+        
+        return CategorySpending(
+          category: category,
+          totalAmount: row.read(amountExp) ?? 0.0,
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to calculate top expenses: $e');
+    }
+  }
+
   Future<CategorySpending?> getTopSpendingCategory() async {
     try {
       final expenses = await getExpensesByCategory();
