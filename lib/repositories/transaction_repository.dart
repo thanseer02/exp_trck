@@ -281,6 +281,51 @@ class TransactionRepository {
 
   // --- Assistant Analytics Methods ---
 
+  Future<Map<String, dynamic>?> getAssistantTopSpendingCategory({DateTime? start, DateTime? end}) async {
+    try {
+      final amountExp = _db.transactions.amount.sum();
+      
+      var query = _db.selectOnly(_db.transactions)
+        ..join([
+          innerJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId))
+        ])
+        ..addColumns([_db.categories.name, amountExp])
+        ..where(_db.transactions.type.equals('expense'))
+        ..groupBy([_db.categories.name])
+        ..orderBy([OrderingTerm(expression: amountExp, mode: OrderingMode.desc)])
+        ..limit(1);
+        
+      if (start != null && end != null) {
+        query.where(_db.transactions.date.isBetweenValues(start, end));
+      }
+      
+      final row = await query.getSingleOrNull();
+      if (row == null) return null;
+      
+      final name = row.read(_db.categories.name);
+      final amount = row.read(amountExp);
+      
+      // Get total expenses to calculate percentage
+      var totalQuery = _db.selectOnly(_db.transactions)
+        ..addColumns([amountExp])
+        ..where(_db.transactions.type.equals('expense'));
+      if (start != null && end != null) {
+        totalQuery.where(_db.transactions.date.isBetweenValues(start, end));
+      }
+      final totalRow = await totalQuery.getSingleOrNull();
+      final total = totalRow?.read(amountExp) ?? 0.0;
+      
+      return {
+        'name': name,
+        'amount': amount,
+        'total': total
+      };
+    } catch (e) {
+      throw Exception('Failed to get top spending category: $e');
+    }
+  }
+
+
   Future<double> getCategoryExpense(String categoryName, {DateTime? start, DateTime? end}) async {
     try {
       final amountExp = _db.transactions.amount.sum();
