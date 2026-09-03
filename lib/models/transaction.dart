@@ -1,31 +1,21 @@
 class AppTransaction {
   final int? id;
-  final String title;
+  final String type; // 'income' or 'expense'
   final double amount;
+  final int categoryId;
+  final String? note;
   final DateTime date;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   AppTransaction({
     this.id,
-    required this.title,
+    required this.type,
     required this.amount,
+    required this.categoryId,
+    this.note,
     required this.date,
+    this.createdAt,
+    this.updatedAt,
   });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'amount': amount,
-      'date': date.toIso8601String(),
-    };
-  }
-
-  factory AppTransaction.fromMap(Map<String, dynamic> map) {
-    return AppTransaction(
-      id: map['id'],
-      title: map['title'],
-      amount: map['amount'],
-      date: DateTime.parse(map['date']),
-    );
-  }
 }

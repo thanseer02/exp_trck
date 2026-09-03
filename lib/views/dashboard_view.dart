@@ -35,7 +35,7 @@ class _DashboardViewState extends State<DashboardView> {
               itemBuilder: (context, index) {
                 final transaction = viewModel.transactions[index];
                 return ListTile(
-                  title: Text(transaction.title),
+                  title: Text(transaction.note ?? transaction.type),
                   subtitle: Text(transaction.date.toString()),
                   trailing: Text('\$${transaction.amount.toStringAsFixed(2)}'),
                 );

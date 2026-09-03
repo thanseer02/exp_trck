@@ -3,15 +3,22 @@ import 'package:provider/provider.dart';
 import 'viewmodels/transaction_viewmodel.dart';
 import 'views/dashboard_view.dart';
 import 'database/app_database.dart';
+import 'repositories/transaction_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppDatabase.instance.database; // Initialize DB
+  final appDb = AppDatabase();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => TransactionViewModel()),
+        Provider<AppDatabase>.value(value: appDb),
+        Provider<TransactionRepository>(
+          create: (context) => TransactionRepository(context.read<AppDatabase>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TransactionViewModel(context.read<TransactionRepository>()),
+        ),
       ],
       child: const ExpenseTrackerApp(),
     ),
