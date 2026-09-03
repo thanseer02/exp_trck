@@ -11,7 +11,7 @@ class TransactionViewModel extends ChangeNotifier {
   List<Transaction> get transactions => _transactions;
 
   Future<void> loadTransactions() async {
-    _transactions = await _repository.getTransactions();
+    _transactions = await _repository.getAllTransactions();
     notifyListeners();
   }
 

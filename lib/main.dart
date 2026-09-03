@@ -4,6 +4,7 @@ import 'viewmodels/transaction_viewmodel.dart';
 import 'views/dashboard_view.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
+import 'repositories/category_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,9 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<AppDatabase>.value(value: appDb),
+        Provider<CategoryRepository>(
+          create: (context) => CategoryRepository(context.read<AppDatabase>()),
+        ),
         Provider<TransactionRepository>(
           create: (context) => TransactionRepository(context.read<AppDatabase>()),
         ),
