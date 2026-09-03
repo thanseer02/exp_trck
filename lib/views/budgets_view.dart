@@ -242,41 +242,44 @@ class _BudgetsViewState extends State<BudgetsView> {
                   const SizedBox(height: 24),
                   
                   // Savings Goal Card mapped to global balance
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceDark,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.borderDark),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: const BoxDecoration(
-                                color: AppColors.surfaceContainerLowDark,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.shield_outlined, color: AppColors.income, size: 20),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Emergency Reserve', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 4),
-                                  Text('${settings.formatAmount(totalBalance)} of ${settings.formatAmount(10000.0)}', style: AppStyles.bodySecondary),
-                                ],
-                              ),
-                            ),
-                            Text('${((totalBalance / 10000.0).clamp(0.0, 1.0) * 100).toInt()}%', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.bold)),
-                          ],
+                  Builder(
+                    builder: (context) {
+                      final goalTarget = totalBalance > 0 ? totalBalance * 1.5 : 1000.0;
+                      return Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceDark,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: AppColors.borderDark),
                         ),
-                        const SizedBox(height: 20),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.surfaceContainerLowDark,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.shield_outlined, color: AppColors.income, size: 20),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('Emergency Reserve', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 4),
+                                      Text('${settings.formatAmount(totalBalance)} of ${settings.formatAmount(goalTarget)}', style: AppStyles.bodySecondary),
+                                    ],
+                                  ),
+                                ),
+                                Text('${((totalBalance / goalTarget).clamp(0.0, 1.0) * 100).toInt()}%', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
                         Container(
                           height: 6,
                           width: double.infinity,
@@ -286,7 +289,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                           ),
                           child: FractionallySizedBox(
                             alignment: Alignment.centerLeft,
-                            widthFactor: (totalBalance / 10000.0).clamp(0.0, 1.0),
+                            widthFactor: goalTarget > 0 ? (totalBalance / goalTarget).clamp(0.0, 1.0) : 0.0,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: AppColors.income,
@@ -310,8 +313,9 @@ class _BudgetsViewState extends State<BudgetsView> {
                         ),
                       ],
                     ),
+                  );
+                   }
                   ),
-                  
                   const SizedBox(height: 64),
                 ],
               ),

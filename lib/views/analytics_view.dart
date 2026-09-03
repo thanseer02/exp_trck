@@ -39,11 +39,15 @@ class _AnalyticsViewState extends State<AnalyticsView> {
     }
 
     final totalExpense = vm.analyticsMonthlySummary?.totalExpense ?? 0.0;
-    // Mock budget for UI demonstration based on the design
-    const mockBudget = 5000.0;
-    final spentPercentage = (totalExpense / mockBudget).clamp(0.0, 1.0);
+    final totalIncome = vm.analyticsMonthlySummary?.totalIncome ?? 0.0;
+    final budget = totalIncome > 0 ? totalIncome : (totalExpense > 0 ? totalExpense : 0.0);
+    final spentPercentage = budget > 0 ? (totalExpense / budget).clamp(0.0, 1.0) : 0.0;
     final spentPercentText = '${(spentPercentage * 100).toInt()}%';
-    final remaining = mockBudget - totalExpense;
+    final remaining = budget > totalExpense ? budget - totalExpense : 0.0;
+    
+    final now = DateTime.now();
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final daysLeft = daysInMonth - now.day;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -123,7 +127,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'of ${settings.formatAmount(mockBudget)}',
+                          'of ${settings.formatAmount(budget)}',
                           style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
                         ),
                       ],
@@ -157,7 +161,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                           style: AppStyles.caption,
                         ),
                         Text(
-                          '11 days left', // Mock data for days left
+                          '$daysLeft days left',
                           style: AppStyles.caption,
                         ),
                       ],
@@ -178,36 +182,66 @@ class _AnalyticsViewState extends State<AnalyticsView> {
               ),
               const SizedBox(height: 24),
               
-              // Segmented Progress Bar (Mocked for visual based on the design)
-              Row(
-                children: [
-                  Expanded(flex: 38, child: _ProgressSegment(color: AppColors.income, isFirst: true)),
-                  Expanded(flex: 20, child: _ProgressSegment(color: Colors.blue)),
-                  Expanded(flex: 14, child: _ProgressSegment(color: Colors.purpleAccent)),
-                  Expanded(flex: 8, child: _ProgressSegment(color: AppColors.textTertiaryDark)),
-                  Expanded(flex: 20, child: _ProgressSegment(color: const Color(0xFFF87171), isLast: true)),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Mocked Category List to perfectly match the design
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.borderDark),
+              if (vm.analyticsTopExpenses.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32.0),
+                  child: Center(
+                    child: Text('No spending data for this period.', style: AppStyles.bodySecondary),
+                  ),
+                )
+              else ...[
+                Builder(
+                  builder: (context) {
+                    final categoryColors = const [AppColors.income, Colors.blue, Colors.purpleAccent, Color(0xFFF87171), Colors.orangeAccent];
+                    return Column(
+                      children: [
+                        // Segmented Progress Bar
+                        Row(
+                          children: vm.analyticsTopExpenses.map((item) {
+                            final index = vm.analyticsTopExpenses.indexOf(item);
+                            final flex = totalExpense > 0 ? (item.totalAmount / totalExpense * 100).toInt() : 0;
+                            if (flex <= 0) return const SizedBox.shrink();
+                            return Expanded(
+                              flex: flex,
+                              child: _ProgressSegment(
+                                color: categoryColors[index % categoryColors.length],
+                                isFirst: index == 0,
+                                isLast: index == vm.analyticsTopExpenses.length - 1,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 24),
+                        
+                        // Category List
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceDark,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.borderDark),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Column(
+                            children: vm.analyticsTopExpenses.map((item) {
+                              final index = vm.analyticsTopExpenses.indexOf(item);
+                              final percentage = totalExpense > 0 
+                                  ? (item.totalAmount / totalExpense * 100).toInt() 
+                                  : 0;
+                              return _CategoryRow(
+                                color: categoryColors[index % categoryColors.length],
+                                name: item.category.name,
+                                amount: settings.formatAmount(item.totalAmount),
+                                percentage: '$percentage%',
+                                isLast: index == vm.analyticsTopExpenses.length - 1,
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  children: [
-                    _CategoryRow(color: AppColors.income, name: 'Housing & Utilities', amount: '\$1,450.00', percentage: '38%'),
-                    _CategoryRow(color: Colors.blue, name: 'Food & Dining', amount: '\$780.20', percentage: '20%'),
-                    _CategoryRow(color: Colors.purpleAccent, name: 'Shopping & Tech', amount: '\$540.00', percentage: '14%'),
-                    _CategoryRow(color: AppColors.textTertiaryDark, name: 'Transportation', amount: '\$320.30', percentage: '8%'),
-                    _CategoryRow(color: const Color(0xFFF87171), name: 'Entertainment & Other', amount: '\$730.00', percentage: '20%', isLast: true),
-                  ],
-                ),
-              ),
+              ],
               
               const SizedBox(height: 40),
             ],
