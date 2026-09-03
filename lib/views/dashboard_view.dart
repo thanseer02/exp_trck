@@ -10,6 +10,8 @@ import '../models/category.dart';
 import 'analytics_view.dart';
 import 'transactions_view.dart';
 import 'budgets_view.dart';
+import 'add_edit_transaction_view.dart';
+import 'transfer_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -282,10 +284,36 @@ class _QuickActionHub extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _ActionBtn(icon: Icons.add, label: 'Income', iconColor: AppColors.income),
-        _ActionBtn(icon: Icons.remove, label: 'Expense', iconColor: const Color(0xFFEF4444)), // Red for expense action
-        _ActionBtn(icon: Icons.swap_horiz, label: 'Transfer', iconColor: AppColors.textPrimaryDark),
-        _ActionBtn(icon: Icons.filter_center_focus, label: 'Scan', iconColor: AppColors.textPrimaryDark),
+        _ActionBtn(
+          icon: Icons.add, 
+          label: 'Income', 
+          iconColor: AppColors.income,
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditTransactionView(initialType: TransactionType.income)));
+          },
+        ),
+        _ActionBtn(
+          icon: Icons.remove, 
+          label: 'Expense', 
+          iconColor: const Color(0xFFEF4444),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditTransactionView(initialType: TransactionType.expense)));
+          },
+        ),
+        _ActionBtn(
+          icon: Icons.swap_horiz, 
+          label: 'Transfer', 
+          iconColor: AppColors.textPrimaryDark,
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const TransferView()));
+          },
+        ),
+        _ActionBtn(
+          icon: Icons.filter_center_focus, 
+          label: 'Scan', 
+          iconColor: AppColors.textPrimaryDark,
+          onTap: () {},
+        ),
       ],
     );
   }
@@ -295,31 +323,35 @@ class _ActionBtn extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color iconColor;
+  final VoidCallback? onTap;
 
-  const _ActionBtn({required this.icon, required this.label, required this.iconColor});
+  const _ActionBtn({required this.icon, required this.label, required this.iconColor, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: AppColors.backgroundDark, // Uses the deep background
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.surfaceContainerLowDark, width: 1.5),
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.backgroundDark, // Uses the deep background
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.surfaceContainerLowDark, width: 1.5),
+            ),
+            child: Center(
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
           ),
-          child: Center(
-            child: Icon(icon, color: iconColor, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 11, fontWeight: FontWeight.w500),
           ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          label,
-          style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 11, fontWeight: FontWeight.w500),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

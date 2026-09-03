@@ -254,73 +254,106 @@ class _TransactionTile extends StatelessWidget {
       orElse: () => Category(id: -1, name: 'Unknown', icon: 'category', type: tx.type),
     );
 
-    return InkWell(
-      onTap: () async {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AddEditTransactionView(transaction: tx),
+    return Dismissible(
+      key: Key(tx.id.toString()),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: const Color(0xFFF87171),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24.0),
+        child: const Icon(Icons.delete_outline, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppColors.surfaceDark,
+            title: const Text('Delete Transaction', style: TextStyle(color: AppColors.textPrimaryDark)),
+            content: const Text('Are you sure you want to delete this transaction?', style: TextStyle(color: AppColors.textSecondaryDark)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryDark)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Delete', style: TextStyle(color: Color(0xFFF87171))),
+              ),
+            ],
           ),
         );
-        if (result == true) {
-          vm.loadTransactions();
-        }
       },
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 24.0),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceContainerLowDark,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _getIconData(category.icon), 
-                color: AppColors.textSecondaryDark,
-                size: 18,
-              ),
+      onDismissed: (direction) {
+        vm.deleteTransaction(tx.id!);
+      },
+      child: InkWell(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddEditTransactionView(transaction: tx),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          );
+          if (result == true) {
+            vm.loadTransactions();
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 24.0, left: 24.0, right: 24.0),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.surfaceContainerLowDark,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _getIconData(category.icon), 
+                  color: AppColors.textSecondaryDark,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name,
+                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: AppColors.textPrimaryDark),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${category.name} • ${DateFormat('h:mm a').format(tx.date.toLocal())}',
+                      style: const TextStyle(color: AppColors.textTertiaryDark, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name,
-                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: AppColors.textPrimaryDark),
+                    '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: isIncome ? AppColors.income : const Color(0xFFF87171), 
+                      fontSize: 14,
+                    ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
-                    '${category.name} • ${DateFormat('h:mm a').format(tx.date.toLocal())}',
-                    style: const TextStyle(color: AppColors.textTertiaryDark, fontSize: 11),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    isIncome ? 'CLEARED' : 'CARD',
+                    style: const TextStyle(fontSize: 8, color: AppColors.textTertiaryDark, letterSpacing: 1.0, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${isIncome ? '+' : '-'}${context.read<SettingsViewModel>().formatAmount(tx.amount)}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: isIncome ? AppColors.income : const Color(0xFFF87171), 
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  isIncome ? 'CLEARED' : 'CARD',
-                  style: TextStyle(fontSize: 8, color: AppColors.textTertiaryDark, letterSpacing: 1.0, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

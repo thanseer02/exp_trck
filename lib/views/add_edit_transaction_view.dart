@@ -9,15 +9,16 @@ import '../theme/app_colors.dart';
 
 class AddEditTransactionView extends StatefulWidget {
   final Transaction? transaction;
+  final TransactionType? initialType;
 
-  const AddEditTransactionView({super.key, this.transaction});
+  const AddEditTransactionView({super.key, this.transaction, this.initialType});
 
   @override
   State<AddEditTransactionView> createState() => _AddEditTransactionViewState();
 }
 
 class _AddEditTransactionViewState extends State<AddEditTransactionView> {
-  TransactionType _selectedType = TransactionType.expense;
+  late TransactionType _selectedType;
   String _amountStr = '0';
   int? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
@@ -26,6 +27,8 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
   @override
   void initState() {
     super.initState();
+    _selectedType = widget.initialType ?? TransactionType.expense;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CategoryViewModel>().loadCategories();
@@ -129,12 +132,43 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('New Entry', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text(widget.transaction == null ? 'New Entry' : 'Edit Entry', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold)),
         actions: [
-          TextButton(
-            onPressed: () => _onNumpadPressed('C'),
-            child: const Text('Clear', style: TextStyle(color: AppColors.textSecondaryDark)),
-          ),
+          if (widget.transaction != null)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFF87171)),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: AppColors.surfaceDark,
+                    title: const Text('Delete Transaction', style: TextStyle(color: AppColors.textPrimaryDark)),
+                    content: const Text('Are you sure you want to delete this transaction?', style: TextStyle(color: AppColors.textSecondaryDark)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryDark)),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Delete', style: TextStyle(color: Color(0xFFF87171))),
+                      ),
+                    ],
+                  ),
+                );
+                
+                if (confirm == true && mounted) {
+                  final vm = context.read<TransactionViewModel>();
+                  await vm.deleteTransaction(widget.transaction!.id!);
+                  if (mounted) Navigator.pop(context, true);
+                }
+              },
+            )
+          else
+            TextButton(
+              onPressed: () => _onNumpadPressed('C'),
+              child: const Text('Clear', style: TextStyle(color: AppColors.textSecondaryDark)),
+            ),
           const SizedBox(width: 8),
         ],
       ),
