@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'viewmodels/transaction_viewmodel.dart';
 import 'viewmodels/category_viewmodel.dart';
 import 'viewmodels/settings_viewmodel.dart';
+import 'viewmodels/assistant_viewmodel.dart';
+import 'services/assistant_parser.dart';
+import 'services/assistant_response_generator.dart';
 import 'routes/app_routes.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
@@ -43,6 +46,17 @@ void main() async {
             context.read<CategoryRepository>(),
             context.read<TransactionRepository>(),
           )..loadCategories(),
+        ),
+        Provider<AssistantParser>(create: (_) => AssistantParser()),
+        Provider<AssistantResponseGenerator>(
+          create: (_) => AssistantResponseGenerator(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AssistantViewModel(
+            context.read<TransactionRepository>(),
+            context.read<AssistantParser>(),
+            context.read<AssistantResponseGenerator>(),
+          ),
         ),
       ],
       child: const ExpenseTrackerApp(),

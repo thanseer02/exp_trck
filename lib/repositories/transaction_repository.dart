@@ -105,12 +105,19 @@ class TransactionRepository {
     }
   }
 
-  Future<List<domain.Transaction>> getTransactionsForPeriod(DateTime start, DateTime end) async {
+  Future<List<domain.Transaction>> getTransactionsForPeriod(
+    DateTime start,
+    DateTime end,
+  ) async {
     try {
-      final results = await (_db.select(_db.transactions)
-        ..where((t) => t.date.isBetweenValues(start, end))
-        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
-        .get();
+      final results =
+          await (_db.select(_db.transactions)
+                ..where((t) => t.date.isBetweenValues(start, end))
+                ..orderBy([
+                  (t) =>
+                      OrderingTerm(expression: t.date, mode: OrderingMode.desc),
+                ]))
+              .get();
       return results.map(_mapTransaction).toList();
     } catch (e) {
       throw Exception('Failed to load transactions for period: $e');

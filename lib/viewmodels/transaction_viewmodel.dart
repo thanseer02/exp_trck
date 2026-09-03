@@ -97,8 +97,8 @@ class TransactionViewModel extends ChangeNotifier {
     _recentTransactions = await _repository.getRecentTransactions(limit: 5);
     _topSpending = await _repository.getTopExpenses(now, limit: 3);
     _weeklyCadenceTransactions = await _repository.getTransactionsForPeriod(
-      now.subtract(const Duration(days: 7)), 
-      now
+      now.subtract(const Duration(days: 7)),
+      now,
     );
 
     if (notify) {
