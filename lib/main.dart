@@ -8,7 +8,7 @@ import 'views/main_navigation_view.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/category_repository.dart';
-
+import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final appDb = AppDatabase();
@@ -50,16 +50,10 @@ class ExpenseTrackerApp extends StatelessWidget {
     return Consumer<SettingsViewModel>(
       builder: (context, settingsVM, child) {
         return MaterialApp(
-          title: 'Expense Tracker',
-          themeMode: settingsVM.themeMode,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.light),
-            useMaterial3: true,
-          ),
-          darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
-            useMaterial3: true,
-          ),
+          title: 'Vault',
+          themeMode: ThemeMode.dark,
+          theme: AppTheme.darkTheme, // Force dark theme as the default
+          darkTheme: AppTheme.darkTheme,
           home: const MainNavigationView(),
         );
       },
