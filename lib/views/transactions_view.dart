@@ -8,7 +8,8 @@ import '../models/transaction.dart';
 import '../models/transaction_type.dart';
 import '../models/category.dart';
 import '../theme/app_colors.dart';
-import 'add_edit_transaction_view.dart';
+import '../theme/app_styles.dart';
+import '../routes/app_routes.dart';
 
 class TransactionsView extends StatefulWidget {
   const TransactionsView({super.key});
@@ -49,18 +50,13 @@ class _TransactionsViewState extends State<TransactionsView> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Ledger', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text('Ledger', style: AppStyles.appBarTitle),
 
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary, // Green FlowLedger action
         onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddEditTransactionView(),
-            ),
-          );
+          final result = await Navigator.pushNamed(context, AppRoutes.addEditTransaction);
           if (result == true && mounted) {
             context.read<TransactionViewModel>().loadTransactions();
           }
@@ -99,7 +95,7 @@ class _TransactionsViewState extends State<TransactionsView> {
           const SizedBox(height: 16),
           Text(
             'No transactions found.',
-            style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 16),
+            style: AppStyles.bodySecondary,
           ),
         ],
       ),
@@ -145,12 +141,7 @@ class _TransactionsViewState extends State<TransactionsView> {
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Text(
                 displayDate,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.5,
-                  color: AppColors.textTertiaryDark,
-                ),
+                style: AppStyles.sectionHeader,
               ),
             ),
             ...transactionsForDate.map((tx) => _TransactionTile(tx: tx, vm: vm)).toList(),
@@ -266,16 +257,16 @@ class _TransactionTile extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: AppColors.surfaceDark,
-            title: const Text('Delete Transaction', style: TextStyle(color: AppColors.textPrimaryDark)),
-            content: const Text('Are you sure you want to delete this transaction?', style: TextStyle(color: AppColors.textSecondaryDark)),
+            title: const Text('Delete Transaction', style: AppStyles.bodyPrimary),
+            content: const Text('Are you sure you want to delete this transaction?', style: AppStyles.bodySecondary),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryDark)),
+                child: const Text('Cancel', style: AppStyles.bodySecondary),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Delete', style: TextStyle(color: Color(0xFFF87171))),
+                child: const Text('Delete', style: AppStyles.destructive),
               ),
             ],
           ),
@@ -286,11 +277,10 @@ class _TransactionTile extends StatelessWidget {
       },
       child: InkWell(
         onTap: () async {
-          final result = await Navigator.push(
+          final result = await Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (context) => AddEditTransactionView(transaction: tx),
-            ),
+            AppRoutes.addEditTransaction,
+            arguments: {'transaction': tx},
           );
           if (result == true) {
             vm.loadTransactions();
@@ -320,12 +310,12 @@ class _TransactionTile extends StatelessWidget {
                   children: [
                     Text(
                       tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name,
-                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: AppColors.textPrimaryDark),
+                      style: AppStyles.bodyPrimary,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${category.name} • ${DateFormat('h:mm a').format(tx.date.toLocal())}',
-                      style: const TextStyle(color: AppColors.textTertiaryDark, fontSize: 11),
+                      style: AppStyles.caption,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

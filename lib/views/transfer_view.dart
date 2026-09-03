@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_styles.dart';
 
 class TransferView extends StatelessWidget {
   const TransferView({super.key});
@@ -15,7 +16,7 @@ class TransferView extends StatelessWidget {
           icon: const Icon(Icons.close, color: AppColors.textPrimaryDark, size: 24),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Transfer', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text('Transfer', style: AppStyles.appBarTitle),
       ),
       body: SafeArea(
         child: Padding(

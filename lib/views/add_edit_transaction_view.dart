@@ -6,6 +6,7 @@ import '../models/transaction_type.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../viewmodels/category_viewmodel.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_styles.dart';
 
 class AddEditTransactionView extends StatefulWidget {
   final Transaction? transaction;
@@ -132,7 +133,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(widget.transaction == null ? 'New Entry' : 'Edit Entry', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text(widget.transaction == null ? 'New Entry' : 'Edit Entry', style: AppStyles.appBarTitle),
         actions: [
           if (widget.transaction != null)
             IconButton(
@@ -142,16 +143,16 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: AppColors.surfaceDark,
-                    title: const Text('Delete Transaction', style: TextStyle(color: AppColors.textPrimaryDark)),
-                    content: const Text('Are you sure you want to delete this transaction?', style: TextStyle(color: AppColors.textSecondaryDark)),
+                    title: const Text('Delete Transaction', style: AppStyles.bodyPrimary),
+                    content: const Text('Are you sure you want to delete this transaction?', style: AppStyles.bodySecondary),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryDark)),
+                        child: const Text('Cancel', style: AppStyles.bodySecondary),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Delete', style: TextStyle(color: Color(0xFFF87171))),
+                        child: const Text('Delete', style: AppStyles.destructive),
                       ),
                     ],
                   ),
@@ -167,7 +168,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
           else
             TextButton(
               onPressed: () => _onNumpadPressed('C'),
-              child: const Text('Clear', style: TextStyle(color: AppColors.textSecondaryDark)),
+              child: const Text('Clear', style: AppStyles.bodySecondary),
             ),
           const SizedBox(width: 8),
         ],
@@ -231,7 +232,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                         children: [
                           Icon(Icons.credit_card, color: AppColors.textSecondaryDark, size: 14),
                           SizedBox(width: 8),
-                          Text('Chase Sapphire...', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                          Text('Chase Sapphire...', style: AppStyles.bodySecondary),
                           SizedBox(width: 4),
                           Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondaryDark, size: 14),
                         ],
@@ -248,7 +249,7 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                             : categoryVm.expenseCategories;
                             
                         if (categories.isEmpty) {
-                          return const Center(child: Text('No categories found', style: TextStyle(color: AppColors.textSecondaryDark)));
+                          return const Center(child: Text('No categories found', style: AppStyles.bodySecondary));
                         }
                         
                         return GridView.builder(
@@ -342,13 +343,13 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor: AppColors.surfaceDark,
-                            title: const Text('Add Note', style: TextStyle(color: AppColors.textPrimaryDark)),
+                            title: const Text('Add Note', style: AppStyles.bodyPrimary),
                             content: TextField(
                               controller: textController,
-                              style: const TextStyle(color: AppColors.textPrimaryDark),
+                              style: AppStyles.bodyPrimary,
                               decoration: const InputDecoration(
                                 hintText: 'Enter note here...',
-                                hintStyle: TextStyle(color: AppColors.textTertiaryDark),
+                                hintStyle: AppStyles.caption,
                               ),
                               autofocus: true,
                             ),

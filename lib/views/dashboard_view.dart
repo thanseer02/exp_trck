@@ -5,14 +5,10 @@ import '../viewmodels/transaction_viewmodel.dart';
 import '../models/transaction_type.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_styles.dart';
 import '../viewmodels/category_viewmodel.dart';
 import '../models/category.dart';
-import 'analytics_view.dart';
-import 'transactions_view.dart';
-import 'budgets_view.dart';
-import 'add_edit_transaction_view.dart';
-import 'transfer_view.dart';
-import 'settings_view.dart';
+import '../routes/app_routes.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -125,10 +121,7 @@ class _FlowLedgerDarkHeader extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.settings, color: AppColors.textSecondaryDark, size: 22),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SettingsView()),
-            );
+            Navigator.pushNamed(context, AppRoutes.settings);
           },
         ),
         const SizedBox(width: 8),
@@ -186,22 +179,12 @@ class _GreetingSectionState extends State<_GreetingSection> {
       children: [
         Text(
           today.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.5,
-            color: AppColors.textTertiaryDark,
-          ),
+          style: AppStyles.sectionHeader,
         ),
         const SizedBox(height: 6),
         Text(
           '${_getGreeting()}, $userName',
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimaryDark,
-            letterSpacing: -0.5,
-          ),
+          style: AppStyles.heading2,
         ),
         const SizedBox(height: 4),
         Text(
@@ -270,10 +253,7 @@ class _MinimalBalanceSection extends StatelessWidget {
                     ),
                     Text(
                       ' this month',
-                      style: TextStyle(
-                        color: AppColors.textTertiaryDark,
-                        fontSize: 11,
-                      ),
+                      style: AppStyles.caption,
                     ),
                   ],
                 ),
@@ -341,7 +321,7 @@ class _QuickActionHub extends StatelessWidget {
           label: 'Income', 
           iconColor: AppColors.income,
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditTransactionView(initialType: TransactionType.income)));
+            Navigator.pushNamed(context, AppRoutes.addEditTransaction, arguments: {'initialType': TransactionType.income});
           },
         ),
         _ActionBtn(
@@ -349,7 +329,7 @@ class _QuickActionHub extends StatelessWidget {
           label: 'Expense', 
           iconColor: const Color(0xFFEF4444),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditTransactionView(initialType: TransactionType.expense)));
+            Navigator.pushNamed(context, AppRoutes.addEditTransaction, arguments: {'initialType': TransactionType.expense});
           },
         ),
         _ActionBtn(
@@ -357,7 +337,7 @@ class _QuickActionHub extends StatelessWidget {
           label: 'Transfer', 
           iconColor: AppColors.textPrimaryDark,
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const TransferView()));
+            Navigator.pushNamed(context, AppRoutes.transfer);
           },
         ),
         _ActionBtn(
@@ -473,16 +453,16 @@ class _WeeklyCadenceSection extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Weekly Cadence', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w600)),
+                const Text('Weekly Cadence', style: AppStyles.bodyPrimary),
                 Row(
                   children: [
                     Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.income, shape: BoxShape.circle)),
                     const SizedBox(width: 6),
-                    const Text('Inflow', style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 11)),
+                    const Text('Inflow', style: AppStyles.caption),
                     const SizedBox(width: 12),
                     Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.surfaceContainerHighDark, shape: BoxShape.circle)),
                     const SizedBox(width: 6),
-                    const Text('Outflow', style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 11)),
+                    const Text('Outflow', style: AppStyles.caption),
                   ],
                 ),
               ],
@@ -574,11 +554,11 @@ class _RecentActivitySection extends StatelessWidget {
           children: [
             const Text(
               'Recent Activity',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark),
+              style: AppStyles.bodyPrimary,
             ),
             const Text(
               'View all',
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondaryDark),
+              style: AppStyles.caption,
             ),
           ],
         ),
@@ -587,7 +567,7 @@ class _RecentActivitySection extends StatelessWidget {
           builder: (context, vm, categoryVm, child) {
             if (vm.recentTransactions.isEmpty) {
               return Center(
-                child: Text('No recent transactions.', style: TextStyle(color: AppColors.textSecondaryDark)),
+                child: Text('No recent transactions.', style: AppStyles.bodySecondary),
               );
             }
             
@@ -626,12 +606,12 @@ class _RecentActivitySection extends StatelessWidget {
                               tx.note != null && tx.note!.isNotEmpty ? tx.note! : category.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: AppColors.textPrimaryDark),
+                              style: AppStyles.bodyPrimary,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '${category.name} • ${DateFormat('MMM d').format(tx.date.toLocal())}',
-                              style: const TextStyle(color: AppColors.textTertiaryDark, fontSize: 11),
+                              style: AppStyles.caption,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -678,7 +658,7 @@ class _ExploreSections extends StatelessWidget {
       children: [
         const Text(
           'Explore & Sections',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark),
+          style: AppStyles.bodyPrimary,
         ),
         const SizedBox(height: 16),
         Row(
@@ -690,7 +670,7 @@ class _ExploreSections extends StatelessWidget {
                 subtitle: 'Cashflow &\nTrends',
                 iconColor: AppColors.income,
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AnalyticsView()));
+                  Navigator.pushNamed(context, AppRoutes.analytics);
                 },
               ),
             ),
@@ -702,7 +682,7 @@ class _ExploreSections extends StatelessWidget {
                 subtitle: 'Targets &\nLimits',
                 iconColor: AppColors.textPrimaryDark,
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetsView()));
+                  Navigator.pushNamed(context, AppRoutes.budgets);
                 },
               ),
             ),
@@ -714,7 +694,7 @@ class _ExploreSections extends StatelessWidget {
                 subtitle: 'All\nTransactions',
                 iconColor: AppColors.textPrimaryDark,
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionsView()));
+                  Navigator.pushNamed(context, AppRoutes.transactions);
                 },
               ),
             ),

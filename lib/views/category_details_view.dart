@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../theme/app_styles.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import '../models/category.dart';
 import '../models/transaction_type.dart';
 import '../viewmodels/transaction_viewmodel.dart';
-import 'add_edit_transaction_view.dart';
+import '../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 
 class CategoryDetailsView extends StatelessWidget {
@@ -141,12 +142,7 @@ class CategoryDetailsView extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 8.0),
                           child: ListTile(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => AddEditTransactionView(transaction: tx),
-                                ),
-                              );
+                              Navigator.pushNamed(context, AppRoutes.addEditTransaction, arguments: {'transaction': tx});
                             },
                             leading: CircleAvatar(
                               backgroundColor: color.withValues(alpha: 0.1),
@@ -179,7 +175,7 @@ class CategoryDetailsView extends StatelessWidget {
   Widget _buildStatCol(String label, String value) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(label, style: AppStyles.bodySecondary),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ],

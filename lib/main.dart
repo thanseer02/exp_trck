@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'viewmodels/transaction_viewmodel.dart';
 import 'viewmodels/category_viewmodel.dart';
 import 'viewmodels/settings_viewmodel.dart';
-import 'views/dashboard_view.dart';
+import 'routes/app_routes.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/category_repository.dart';
@@ -61,7 +61,8 @@ class ExpenseTrackerApp extends StatelessWidget {
           themeMode: ThemeMode.dark,
           theme: AppTheme.darkTheme,
           darkTheme: AppTheme.darkTheme,
-          home: const DashboardView(),
+          initialRoute: AppRoutes.dashboard,
+          onGenerateRoute: AppRoutes.generateRoute,
         );
       },
     );

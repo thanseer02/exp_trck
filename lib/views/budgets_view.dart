@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_styles.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../viewmodels/settings_viewmodel.dart';
 
@@ -103,7 +104,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                   const SizedBox(height: 4),
                   const Text(
                     'Keep your spending in check',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark),
+                    style: AppStyles.bodySecondary,
                   ),
                   const SizedBox(height: 32),
                   
@@ -123,7 +124,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                           children: [
                             const Text(
                               'MONTHLY DISCRETIONARY',
-                              style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                              style: AppStyles.sectionHeader,
                             ),
                             const Icon(Icons.more_horiz, color: AppColors.textSecondaryDark, size: 20),
                           ],
@@ -135,7 +136,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                           children: [
                             Text(
                               settings.formatAmount(totalExpense),
-                              style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1.0),
+                              style: AppStyles.heading1,
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -178,7 +179,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                             ),
                             Text(
                               '${settings.formatAmount(remaining)} left',
-                              style: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                              style: AppStyles.caption,
                             ),
                           ],
                         ),
@@ -192,8 +193,8 @@ class _BudgetsViewState extends State<BudgetsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Category Budgets', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
-                      const Text('Edit', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                      const Text('Category Budgets', style: AppStyles.sectionTitle),
+                      const Text('Edit', style: AppStyles.bodySecondary),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -202,7 +203,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(24.0),
-                        child: Text('No spending data to generate category budgets.', style: TextStyle(color: AppColors.textSecondaryDark)),
+                        child: Text('No spending data to generate category budgets.', style: AppStyles.bodySecondary),
                       ),
                     )
                   else
@@ -234,8 +235,8 @@ class _BudgetsViewState extends State<BudgetsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Savings Goals', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
-                      const Text('Add', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                      const Text('Savings Goals', style: AppStyles.sectionTitle),
+                      const Text('Add', style: AppStyles.bodySecondary),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -268,7 +269,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                                 children: [
                                   const Text('Emergency Reserve', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 4),
-                                  Text('${settings.formatAmount(totalBalance)} of ${settings.formatAmount(10000.0)}', style: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                                  Text('${settings.formatAmount(totalBalance)} of ${settings.formatAmount(10000.0)}', style: AppStyles.bodySecondary),
                                 ],
                               ),
                             ),
@@ -304,7 +305,7 @@ class _BudgetsViewState extends State<BudgetsView> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
-                            child: const Text('Add Funds', style: TextStyle(color: AppColors.textPrimaryDark)),
+                            child: const Text('Add Funds', style: AppStyles.bodyPrimary),
                           ),
                         ),
                       ],
@@ -363,7 +364,7 @@ class _BudgetCategoryRow extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(name, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text(name, style: AppStyles.bodyPrimary),
                   Text(
                     '$spent / $total',
                     style: TextStyle(

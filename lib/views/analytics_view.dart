@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_styles.dart';
 
 class AnalyticsView extends StatefulWidget {
   const AnalyticsView({super.key});
@@ -75,7 +76,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                       const SizedBox(height: 4),
                       Text(
                         'Overview & activity',
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark),
+                        style: AppStyles.bodySecondary,
                       ),
                     ],
                   ),
@@ -103,7 +104,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                       children: [
                         Text(
                           'SPENT THIS MONTH',
-                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                          style: AppStyles.sectionHeader,
                         ),
                         Text(
                           spentPercentText,
@@ -118,7 +119,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                       children: [
                         Text(
                           settings.formatAmount(totalExpense),
-                          style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1.0),
+                          style: AppStyles.heading1,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -153,11 +154,11 @@ class _AnalyticsViewState extends State<AnalyticsView> {
                       children: [
                         Text(
                           '${settings.formatAmount(remaining)} remaining',
-                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                          style: AppStyles.caption,
                         ),
                         Text(
                           '11 days left', // Mock data for days left
-                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                          style: AppStyles.caption,
                         ),
                       ],
                     ),
@@ -171,8 +172,8 @@ class _AnalyticsViewState extends State<AnalyticsView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Spending by Category', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
-                  Text('Details', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                  const Text('Spending by Category', style: AppStyles.sectionTitle),
+                  Text('Details', style: AppStyles.bodySecondary),
                 ],
               ),
               const SizedBox(height: 24),
@@ -331,7 +332,7 @@ class _CategoryRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     name,
-                    style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w500),
+                    style: AppStyles.bodyPrimary,
                   ),
                 ),
                 Text(
@@ -344,7 +345,7 @@ class _CategoryRow extends StatelessWidget {
                   child: Text(
                     percentage,
                     textAlign: TextAlign.right,
-                    style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                    style: AppStyles.caption,
                   ),
                 ),
               ],

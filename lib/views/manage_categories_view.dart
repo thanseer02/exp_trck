@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../viewmodels/category_viewmodel.dart';
-import 'add_edit_category_view.dart';
+import '../routes/app_routes.dart';
 
 class ManageCategoriesView extends StatelessWidget {
   const ManageCategoriesView({super.key});
@@ -58,10 +58,7 @@ class ManageCategoriesView extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddEditCategoryView()),
-            );
+            Navigator.pushNamed(context, AppRoutes.addEditCategory);
           },
           child: const Icon(Icons.add),
         ),
@@ -86,10 +83,7 @@ class ManageCategoriesView extends StatelessWidget {
           subtitle: category.isDefault ? const Text('Default') : null,
           trailing: const Icon(Icons.edit, size: 20, color: Colors.grey),
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => AddEditCategoryView(category: category)),
-            );
+            Navigator.pushNamed(context, AppRoutes.addEditCategory, arguments: {'category': category});
           },
         );
       },
