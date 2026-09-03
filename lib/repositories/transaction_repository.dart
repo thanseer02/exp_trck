@@ -279,6 +279,67 @@ class TransactionRepository {
 
   // --- Period Analytics Methods ---
 
+  // --- Assistant Analytics Methods ---
+
+  Future<double> getCategoryExpense(String categoryName, {DateTime? start, DateTime? end}) async {
+    try {
+      final amountExp = _db.transactions.amount.sum();
+      
+      var query = _db.selectOnly(_db.transactions)
+        ..join([
+          innerJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId))
+        ])
+        ..addColumns([amountExp])
+        ..where(_db.transactions.type.equals('expense') & _db.categories.name.lower().equals(categoryName.toLowerCase()));
+        
+      if (start != null && end != null) {
+        query.where(_db.transactions.date.isBetweenValues(start, end));
+      }
+      
+      final result = await query.map((row) => row.read(amountExp)).getSingleOrNull();
+      return result ?? 0.0;
+    } catch (e) {
+      throw Exception('Failed to get category expense: $e');
+    }
+  }
+
+  Future<double> getLargestExpense({DateTime? start, DateTime? end}) async {
+    try {
+      final maxExp = _db.transactions.amount.max();
+      var query = _db.selectOnly(_db.transactions)
+        ..addColumns([maxExp])
+        ..where(_db.transactions.type.equals('expense'));
+        
+      if (start != null && end != null) {
+        query.where(_db.transactions.date.isBetweenValues(start, end));
+      }
+      
+      final result = await query.map((row) => row.read(maxExp)).getSingleOrNull();
+      return result ?? 0.0;
+    } catch (e) {
+      throw Exception('Failed to get largest expense: $e');
+    }
+  }
+
+  Future<double> getAverageExpense({DateTime? start, DateTime? end}) async {
+    try {
+      final avgExp = _db.transactions.amount.avg();
+      var query = _db.selectOnly(_db.transactions)
+        ..addColumns([avgExp])
+        ..where(_db.transactions.type.equals('expense'));
+        
+      if (start != null && end != null) {
+        query.where(_db.transactions.date.isBetweenValues(start, end));
+      }
+      
+      final result = await query.map((row) => row.read(avgExp)).getSingleOrNull();
+      return result ?? 0.0;
+    } catch (e) {
+      throw Exception('Failed to get average expense: $e');
+    }
+  }
+
+
   Future<double> getIncomeForPeriod(DateTime start, DateTime end) async {
     try {
       final amountExp = _db.transactions.amount.sum();

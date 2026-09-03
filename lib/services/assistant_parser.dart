@@ -1,14 +1,50 @@
+import 'dart:core';
+import 'package:flutter/foundation.dart';
+
 import '../models/assistant_query.dart';
 import '../models/assistant_intent.dart';
 
 class AssistantParser {
   AssistantQuery parse(String text) {
-    final lowerText = text.toLowerCase().trim();
+    // Normalize: lowercase, whitespace, punctuation
+    String normalized = text.toLowerCase().trim();
+    normalized = normalized.replaceAll(RegExp(r'[^\w\s]'), '');
+    normalized = normalized.replaceAll(RegExp(r'\s+'), ' ');
+
+    final intent = determineIntent(normalized);
+    final category = extractCategory(normalized, intent);
+    final month = extractMonth(normalized);
+    final year = extractYear(normalized);
     
-    final intent = determineIntent(lowerText);
-    final category = extractCategory(lowerText, intent);
-    final month = extractMonth(lowerText);
-    final year = extractYear(lowerText);
+    // Extract start/end dates based on time keywords
+    DateTime? startDate;
+    DateTime? endDate;
+    final now = DateTime.now();
+
+    if (normalized.contains('today')) {
+      startDate = DateTime(now.year, now.month, now.day);
+      endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    } else if (normalized.contains('yesterday')) {
+      final yesterday = now.subtract(const Duration(days: 1));
+      startDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
+      endDate = DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+    } else if (normalized.contains('this week')) {
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      startDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+      endDate = startDate.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
+    } else if (normalized.contains('this month')) {
+      startDate = DateTime(now.year, now.month, 1);
+      endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    } else if (normalized.contains('last month')) {
+      startDate = DateTime(now.year, now.month - 1, 1);
+      endDate = DateTime(now.year, now.month, 0, 23, 59, 59);
+    } else if (normalized.contains('this year')) {
+      startDate = DateTime(now.year, 1, 1);
+      endDate = DateTime(now.year, 12, 31, 23, 59, 59);
+    } else if (normalized.contains('last year')) {
+      startDate = DateTime(now.year - 1, 1, 1);
+      endDate = DateTime(now.year - 1, 12, 31, 23, 59, 59);
+    }
     
     return AssistantQuery(
       intent: intent,
@@ -16,80 +52,138 @@ class AssistantParser {
       category: category,
       month: month,
       year: year,
+      startDate: startDate,
+      endDate: endDate,
     );
   }
 
+  @visibleForTesting
   AssistantIntent determineIntent(String text) {
-    if (text.contains('balance')) {
+    if (_matches(text, [
+      r'\bbalance\b',
+      r'how much money do i have',
+      r'what is left',
+      r'how much do i have',
+    ])) {
       return AssistantIntent.balance;
     }
     
-    if (text.contains('spend the most') || text.contains('spent the most') || text.contains('where do i spend most')) {
+    if (_matches(text, [
+      r'spend the most',
+      r'spending most on',
+      r'category costs me the most',
+      r'where does my money go',
+      r'spend most',
+    ])) {
       return AssistantIntent.topSpendingCategory;
     }
     
-    if (text.contains('biggest expense') || text.contains('largest expense')) {
+    if (_matches(text, [
+      r'biggest expense',
+      r'largest expense',
+      r'highest expense'
+    ])) {
       return AssistantIntent.largestExpense;
     }
     
-    if (text.contains('average expense') || text.contains('average spend')) {
+    if (_matches(text, [
+      r'average expense',
+      r'average spend',
+    ])) {
       return AssistantIntent.averageExpense;
     }
     
-    if (text.contains('more than last month') || text.contains('compare to last month') || (text.contains('spend') && text.contains('last month') && text.contains('more'))) {
+    if (_matches(text, [
+      r'more than last month',
+      r'compare.*last month',
+      r'spend.*more.*last month'
+    ])) {
       return AssistantIntent.monthlyComparison;
     }
     
-    if (text.contains('earn') || text.contains('income') || text.contains('make')) {
-      if (text.contains('this month') || (text.contains('in ') && extractMonth(text) != null)) {
+    if (_matches(text, [
+      r'\bearn',
+      r'\bincome\b',
+      r'\bmake\b',
+      r'made'
+    ])) {
+      if (_matches(text, [r'this month', r'last month', r'january', r'february', r'march', r'april', r'may', r'june', r'july', r'august', r'september', r'october', r'november', r'december'])) {
         return AssistantIntent.monthlyIncome;
       }
       return AssistantIntent.totalIncome;
     }
     
-    if (text.contains('spend') || text.contains('spent') || text.contains('expense')) {
-      if (text.contains('today')) {
+    if (_matches(text, [
+      r'spend on \w+',
+      r'spent on \w+',
+      r'went to \w+'
+    ])) {
+      return AssistantIntent.categoryExpense;
+    }
+    
+    if (_matches(text, [
+      r'\bspend\b',
+      r'\bspent\b',
+      r'\bexpenses?\b',
+      r'cost',
+    ])) {
+      if (text.contains('today') || text.contains('yesterday')) {
         return AssistantIntent.dailyExpense;
       }
-      
-      if (text.contains('on ')) {
-        return AssistantIntent.categoryExpense;
-      }
-      
-      if (text.contains('this month') || (text.contains('in ') && extractMonth(text) != null)) {
+      if (_matches(text, [r'this month', r'last month', r'january', r'february', r'march', r'april', r'may', r'june', r'july', r'august', r'september', r'october', r'november', r'december'])) {
         return AssistantIntent.monthlyExpense;
       }
-      
       return AssistantIntent.totalExpense;
     }
     
-    if (text.contains('recent') || text.contains('last transactions') || text.contains('history')) {
+    if (_matches(text, [
+      r'recent',
+      r'last transactions?',
+      r'history'
+    ])) {
       return AssistantIntent.recentTransactions;
     }
     
-    if (text.contains('hello') || text.contains('hi')) {
+    if (_matches(text, [r'^hello', r'^hi\b'])) {
       return AssistantIntent.help;
     }
     
-    if (text.contains('help')) {
+    if (_matches(text, [r'^help', r'what can you do'])) {
       return AssistantIntent.help;
     }
     
     return AssistantIntent.unknown;
   }
 
+  bool _matches(String text, List<String> patterns) {
+    for (final pattern in patterns) {
+      if (RegExp(pattern).hasMatch(text)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @visibleForTesting
   String? extractCategory(String text, AssistantIntent intent) {
     if (intent != AssistantIntent.categoryExpense) return null;
     
-    // Look for "on [category]"
-    final RegExp regExp = RegExp(r'on\s+([a-zA-Z0-9_]+)\b');
-    final match = regExp.firstMatch(text);
-    if (match != null && match.groupCount >= 1) {
-      return match.group(1);
-    }
+    final RegExp regExp1 = RegExp(r'spend on (\w+)');
+    final match1 = regExp1.firstMatch(text);
+    if (match1 != null) return match1.group(1);
+    
+    final RegExp regExp2 = RegExp(r'spent on (\w+)');
+    final match2 = regExp2.firstMatch(text);
+    if (match2 != null) return match2.group(1);
+    
+    final RegExp regExp3 = RegExp(r'went to (\w+)');
+    final match3 = regExp3.firstMatch(text);
+    if (match3 != null) return match3.group(1);
+    
     return null;
   }
 
+  @visibleForTesting
   int? extractMonth(String text) {
     const months = {
       'january': 1, 'february': 2, 'march': 3, 'april': 4,
@@ -101,13 +195,14 @@ class AssistantParser {
     };
     
     for (final entry in months.entries) {
-      if (text.contains(entry.key)) {
+      if (RegExp(r'\b' + entry.key + r'\b').hasMatch(text)) {
         return entry.value;
       }
     }
     return null;
   }
   
+  @visibleForTesting
   int? extractYear(String text) {
     final RegExp regExp = RegExp(r'\b(20\d{2})\b');
     final match = regExp.firstMatch(text);
