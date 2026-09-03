@@ -3,6 +3,7 @@ import 'dashboard_view.dart';
 import 'transactions_view.dart';
 import 'analytics_view.dart';
 import 'settings_view.dart';
+import 'add_transaction_view.dart';
 
 class MainNavigationView extends StatefulWidget {
   const MainNavigationView({super.key});
@@ -33,6 +34,15 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddTransactionView()),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
