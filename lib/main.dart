@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'viewmodels/transaction_viewmodel.dart';
-import 'views/dashboard_view.dart';
+import 'views/main_navigation_view.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/category_repository.dart';
@@ -40,7 +40,7 @@ class ExpenseTrackerApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const DashboardView(),
+      home: const MainNavigationView(),
     );
   }
 }
