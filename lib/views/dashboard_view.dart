@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaction_viewmodel.dart';
+import '../models/transaction_type.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -35,9 +36,14 @@ class _DashboardViewState extends State<DashboardView> {
               itemBuilder: (context, index) {
                 final transaction = viewModel.transactions[index];
                 return ListTile(
-                  title: Text(transaction.note ?? transaction.type),
+                  title: Text(transaction.note ?? transaction.type.name),
                   subtitle: Text(transaction.date.toString()),
-                  trailing: Text('\$${transaction.amount.toStringAsFixed(2)}'),
+                  trailing: Text(
+                    '\$${transaction.amount.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: transaction.type == TransactionType.income ? Colors.green : Colors.red,
+                    ),
+                  ),
                 );
               },
             ),
