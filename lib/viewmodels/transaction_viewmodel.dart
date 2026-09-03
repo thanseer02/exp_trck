@@ -45,6 +45,17 @@ class TransactionViewModel extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   TransactionSortOption get currentSort => _currentSort;
 
+  // Analytics State
+  DateTime _analyticsMonth = DateTime.now();
+  MonthlySummary? _analyticsMonthlySummary;
+  List<CategorySpending> _analyticsTopExpenses = [];
+  int _analyticsTransactionCount = 0;
+  
+  DateTime get analyticsMonth => _analyticsMonth;
+  MonthlySummary? get analyticsMonthlySummary => _analyticsMonthlySummary;
+  List<CategorySpending> get analyticsTopExpenses => _analyticsTopExpenses;
+  int get analyticsTransactionCount => _analyticsTransactionCount;
+
   Future<void> loadTransactions() async {
     _isLoading = true;
     notifyListeners();
@@ -69,22 +80,42 @@ class TransactionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadAnalyticsData() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _analyticsMonthlySummary = await _repository.getMonthlySummary(_analyticsMonth);
+    _analyticsTopExpenses = await _repository.getTopExpenses(_analyticsMonth, limit: 100);
+    _analyticsTransactionCount = await _repository.getTransactionCount(_analyticsMonth);
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  void setAnalyticsMonth(DateTime month) {
+    _analyticsMonth = month;
+    loadAnalyticsData();
+  }
+
   Future<void> addTransaction(Transaction transaction) async {
     await _repository.addTransaction(transaction);
     await loadTransactions();
     await loadDashboardData();
+    await loadAnalyticsData();
   }
 
   Future<void> updateTransaction(Transaction transaction) async {
     await _repository.updateTransaction(transaction);
     await loadTransactions();
     await loadDashboardData();
+    await loadAnalyticsData();
   }
 
   Future<void> deleteTransaction(int id) async {
     await _repository.deleteTransaction(id);
     await loadTransactions();
     await loadDashboardData();
+    await loadAnalyticsData();
   }
 
   // --- Filtering & Sorting ---

@@ -135,6 +135,22 @@ class TransactionRepository {
     }
   }
 
+  Future<int> getTransactionCount(DateTime month) async {
+    try {
+      final start = DateTime(month.year, month.month, 1);
+      final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+      
+      final countExp = _db.transactions.id.count();
+      final query = _db.selectOnly(_db.transactions)
+        ..addColumns([countExp])
+        ..where(_db.transactions.date.isBetweenValues(start, end));
+      final result = await query.map((row) => row.read(countExp)).getSingleOrNull();
+      return result ?? 0;
+    } catch (e) {
+      throw Exception('Failed to calculate transaction count: $e');
+    }
+  }
+
   // --- Expenses ---
 
   Future<double> getTotalExpenses() async {
