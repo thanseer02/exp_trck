@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/transaction.dart';
 import '../models/transaction_type.dart';
 import '../models/category.dart';
@@ -31,8 +33,17 @@ class TransactionViewModel extends ChangeNotifier {
   DateTime? _filterDate;
   String _searchQuery = '';
   TransactionSortOption _currentSort = TransactionSortOption.newest;
+  Timer? _searchDebouncer;
 
   List<Transaction> get transactions => _transactions;
+  Map<String, List<Transaction>> get groupedTransactions {
+    if (_cachedGroupedTransactions == null) {
+      _cachedGroupedTransactions = _groupTransactions(filteredTransactions);
+    }
+    return _cachedGroupedTransactions!;
+  }
+  Map<String, List<Transaction>>? _cachedGroupedTransactions;
+
   List<Transaction> get recentTransactions => _recentTransactions;
   List<CategorySpending> get topSpending => _topSpending;
   MonthlySummary? get monthlySummary => _monthlySummary;
@@ -65,6 +76,7 @@ class TransactionViewModel extends ChangeNotifier {
     }
     
     _transactions = await _repository.getAllTransactions();
+    _cachedGroupedTransactions = null;
     
     if (notify) {
       _isLoading = false;
@@ -202,26 +214,34 @@ class TransactionViewModel extends ChangeNotifier {
 
   void setFilterType(TransactionType? type) {
     _filterType = type;
+    _cachedGroupedTransactions = null;
     notifyListeners();
   }
 
   void setFilterCategory(Category? category) {
     _filterCategory = category;
+    _cachedGroupedTransactions = null;
     notifyListeners();
   }
 
   void setFilterDate(DateTime? date) {
     _filterDate = date;
+    _cachedGroupedTransactions = null;
     notifyListeners();
   }
 
   void setSearchQuery(String query) {
-    _searchQuery = query.toLowerCase();
-    notifyListeners();
+    if (_searchDebouncer?.isActive ?? false) _searchDebouncer!.cancel();
+    _searchDebouncer = Timer(const Duration(milliseconds: 300), () {
+      _searchQuery = query.toLowerCase();
+      _cachedGroupedTransactions = null;
+      notifyListeners();
+    });
   }
 
   void setSortOption(TransactionSortOption sort) {
     _currentSort = sort;
+    _cachedGroupedTransactions = null;
     notifyListeners();
   }
 
@@ -231,6 +251,7 @@ class TransactionViewModel extends ChangeNotifier {
     _filterDate = null;
     _searchQuery = '';
     _currentSort = TransactionSortOption.newest;
+    _cachedGroupedTransactions = null;
     notifyListeners();
   }
 
@@ -281,5 +302,30 @@ class TransactionViewModel extends ChangeNotifier {
     }
 
     return result;
+  }
+
+  Map<String, List<Transaction>> _groupTransactions(List<Transaction> transactions) {
+    final Map<String, List<Transaction>> groups = {};
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    for (final tx in transactions) {
+      final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
+      String key;
+      if (txDate == today) {
+        key = 'Today';
+      } else if (txDate == yesterday) {
+        key = 'Yesterday';
+      } else {
+        key = DateFormat.yMMMd().format(txDate);
+      }
+
+      if (!groups.containsKey(key)) {
+        groups[key] = [];
+      }
+        groups[key]!.add(tx);
+    }
+    return groups;
   }
 }
