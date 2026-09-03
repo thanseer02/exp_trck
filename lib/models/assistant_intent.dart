@@ -19,6 +19,10 @@ enum AssistantIntent {
   savings,
   spendPercentage,
   mostExpensiveDay,
+  addTransaction,
+  deleteTransaction,
+  confirmAction,
+  cancelAction,
   help,
   unknown,
 }

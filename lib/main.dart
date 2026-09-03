@@ -61,6 +61,7 @@ void main() async {
         ChangeNotifierProvider(
           create: (context) => AssistantViewModel(
             context.read<TransactionRepository>(),
+            context.read<CategoryRepository>(),
             context.read<AssistantParser>(),
             context.read<AssistantResponseGenerator>(),
           ),

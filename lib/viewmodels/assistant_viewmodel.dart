@@ -4,9 +4,14 @@ import '../models/assistant_intent.dart';
 import '../services/assistant_parser.dart';
 import '../services/assistant_response_generator.dart';
 import '../repositories/transaction_repository.dart';
+import '../repositories/category_repository.dart';
+import '../models/category.dart';
+import '../models/transaction.dart';
+import '../models/transaction_type.dart';
 
 class AssistantViewModel extends ChangeNotifier {
   final TransactionRepository _repository;
+  final CategoryRepository _categoryRepository;
   final AssistantParser _parser;
   final AssistantResponseGenerator _generator;
 
@@ -15,7 +20,7 @@ class AssistantViewModel extends ChangeNotifier {
   bool _isProcessing = false;
   bool _hasTransactions = true;
 
-  AssistantViewModel(this._repository, this._parser, this._generator) {
+  AssistantViewModel(this._repository, this._categoryRepository, this._parser, this._generator) {
     _initAssistant();
   }
 
@@ -181,6 +186,51 @@ class AssistantViewModel extends ChangeNotifier {
           final exp2 = await _repository.getExpensesForPeriod(pStart2, pEnd2);
           final percentage = inc2 > 0 ? (exp2 / inc2) * 100 : 0.0;
           data = {'percentage': percentage, 'income': inc2, 'expense': exp2};
+          break;
+        case AssistantIntent.deleteTransaction:
+          final recent = await _repository.getRecentTransactions(limit: 1);
+          if (recent.isNotEmpty) {
+            data = recent.first;
+          }
+          break;
+        case AssistantIntent.confirmAction:
+          if (query.originalQuestion.startsWith('confirmaction ')) {
+             final payload = query.originalQuestion.substring('confirmaction '.length);
+             if (payload.startsWith('ADD:')) {
+                final parts = payload.substring(4).split(':');
+                if (parts.length >= 3) {
+                   final amt = double.parse(parts[0]);
+                   final catName = parts[1];
+                   final dtString = parts.sublist(2).join(':');
+                   final dt = DateTime.parse(dtString);
+                   
+                   int catId = 1; // Fallback
+                   final cats = await _categoryRepository.getCategories();
+                   final match = cats.where((c) => c.name.toLowerCase() == catName.toLowerCase());
+                   if (match.isNotEmpty) {
+                      catId = match.first.id!;
+                   } else {
+                      final newCatId = await _categoryRepository.addCategory(Category(name: catName, type: TransactionType.expense, icon: 'category'));
+                      catId = newCatId;
+                   }
+                   
+                   await _repository.addTransaction(Transaction(
+                     amount: amt,
+                     date: dt,
+                     type: TransactionType.expense,
+                     categoryId: catId,
+                     createdAt: DateTime.now(),
+                   ));
+                }
+             } else if (payload.startsWith('DELETE:')) {
+                final id = int.parse(payload.substring(7));
+                await _repository.deleteTransaction(id);
+             }
+          }
+          break;
+        case AssistantIntent.cancelAction:
+          break;
+        case AssistantIntent.addTransaction:
           break;
         default:
           data = null; 

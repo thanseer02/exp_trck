@@ -197,6 +197,44 @@ class AssistantResponseGenerator {
         message = 'You spent ${perc.toStringAsFixed(1)}% of your income for this period.';
         return AssistantResponse(message: message);
 
+      case AssistantIntent.addTransaction:
+        final cat = query.category ?? 'General';
+        final amt = query.amount ?? 0.0;
+        final date = query.startDate ?? DateTime.now();
+        final dateStr = DateFormat('MMMM d, yyyy').format(date);
+        
+        final payload = 'ADD:$amt:$cat:${date.toIso8601String()}';
+        
+        message = 'I can add this transaction:\\n\\nCategory: $cat\\nAmount: ${_currencyFormat.format(amt)}\\nDate: $dateStr\\n\\nWould you like to add it?';
+        return AssistantResponse(
+          message: message,
+          type: AssistantResponseType.confirmation,
+          confirmPayload: payload,
+          cancelPayload: 'cancel',
+        );
+
+      case AssistantIntent.deleteTransaction:
+        if (data == null) {
+          return AssistantResponse(message: "I couldn't find a transaction to delete.");
+        }
+        final tx = data as Transaction;
+        final dateStr = DateFormat('MMMM d, yyyy').format(tx.date);
+        final payload = 'DELETE:${tx.id}';
+        
+        message = 'I can delete this transaction:\\n\\nAmount: ${_currencyFormat.format(tx.amount)}\\nDate: $dateStr\\n\\nWould you like to delete it?';
+        return AssistantResponse(
+          message: message,
+          type: AssistantResponseType.confirmation,
+          confirmPayload: payload,
+          cancelPayload: 'cancel',
+        );
+        
+      case AssistantIntent.confirmAction:
+        return AssistantResponse(message: 'Action confirmed and executed successfully.');
+        
+      case AssistantIntent.cancelAction:
+        return AssistantResponse(message: 'Action cancelled.');
+
       case AssistantIntent.help:
         message = 'Here are some things you can ask me:';
         final helpGroups = {

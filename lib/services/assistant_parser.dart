@@ -15,6 +15,7 @@ class AssistantParser {
     final category = extractCategory(normalized, intent);
     final month = extractMonth(normalized);
     final year = extractYear(normalized);
+    final amount = extractAmount(normalized);
     
     // Extract start/end dates based on time keywords
     DateTime? startDate;
@@ -65,6 +66,7 @@ class AssistantParser {
       year: year,
       startDate: startDate,
       endDate: endDate,
+      amount: amount,
     );
   }
 
@@ -201,8 +203,24 @@ class AssistantParser {
       return AssistantIntent.help;
     }
     
-    if (_matches(text, [r'^help', r'what can you do'])) {
+    if (_matches(text, [r'^help', r'what can you do', r'what can i ask'])) {
       return AssistantIntent.help;
+    }
+    
+    if (_matches(text, [r'^cancel\b', r'^abort\b'])) {
+      return AssistantIntent.cancelAction;
+    }
+    
+    if (text.startsWith('confirmaction')) {
+      return AssistantIntent.confirmAction;
+    }
+    
+    if (_matches(text, [r'add .* expense', r'add .* transaction'])) {
+      return AssistantIntent.addTransaction;
+    }
+    
+    if (_matches(text, [r'delete .* transaction', r'remove .* transaction'])) {
+      return AssistantIntent.deleteTransaction;
     }
     
     return AssistantIntent.unknown;
@@ -219,7 +237,13 @@ class AssistantParser {
 
   @visibleForTesting
   String? extractCategory(String text, AssistantIntent intent) {
-    if (intent != AssistantIntent.categoryExpense) return null;
+    if (intent == AssistantIntent.addTransaction) {
+       final RegExp regExp4 = RegExp(r'add .*? (\w+) expense');
+       final match4 = regExp4.firstMatch(text);
+       if (match4 != null) return match4.group(1);
+    }
+  
+    if (intent != AssistantIntent.categoryExpense && intent != AssistantIntent.addTransaction) return null;
     
     final RegExp regExp1 = RegExp(r'spend on (\w+)');
     final match1 = regExp1.firstMatch(text);
@@ -233,6 +257,17 @@ class AssistantParser {
     final match3 = regExp3.firstMatch(text);
     if (match3 != null) return match3.group(1);
     
+    return null;
+  }
+  
+  @visibleForTesting
+  double? extractAmount(String text) {
+    final RegExp regExp = RegExp(r'(?:₹|rs\.?|rupees?)?\s*(\d+(?:,\d+)*(?:\.\d+)?)');
+    final match = regExp.firstMatch(text);
+    if (match != null && match.groupCount >= 1) {
+      final str = match.group(1)!.replaceAll(',', '');
+      return double.tryParse(str);
+    }
     return null;
   }
 

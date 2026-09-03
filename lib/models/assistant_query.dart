@@ -7,6 +7,7 @@ class AssistantQuery {
   final DateTime? endDate;
   final int? month;
   final int? year;
+  final double? amount;
   final String originalQuestion;
 
   const AssistantQuery({
@@ -17,5 +18,6 @@ class AssistantQuery {
     this.endDate,
     this.month,
     this.year,
+    this.amount,
   });
 }

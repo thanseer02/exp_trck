@@ -59,8 +59,6 @@ class _AssistantViewState extends State<AssistantView> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AssistantViewModel>();
-    
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
@@ -95,41 +93,53 @@ class _AssistantViewState extends State<AssistantView> {
         child: Column(
           children: [
             // Suggestions strip
-            if (vm.currentSuggestions.isNotEmpty)
-              Container(
-                height: 50,
-                margin: const EdgeInsets.only(top: 16, bottom: 8),
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: vm.currentSuggestions.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final suggestion = vm.currentSuggestions[index];
-                    return ActionChip(
-                      backgroundColor: AppColors.surfaceDark,
-                      side: const BorderSide(color: AppColors.borderDark),
-                      labelStyle: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 13),
-                      label: Text(suggestion),
-                      onPressed: () => _handleSubmitted(suggestion),
-                    );
-                  },
-                ),
-              ),
+            Selector<AssistantViewModel, List<String>>(
+              selector: (_, vm) => vm.currentSuggestions,
+              builder: (context, suggestions, _) {
+                if (suggestions.isEmpty) return const SizedBox.shrink();
+                
+                return Container(
+                  height: 50,
+                  margin: const EdgeInsets.only(top: 16, bottom: 8),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: suggestions.length,
+                    separatorBuilder: (context, index) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final suggestion = suggestions[index];
+                      return ActionChip(
+                        backgroundColor: AppColors.surfaceDark,
+                        side: const BorderSide(color: AppColors.borderDark),
+                        labelStyle: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 13),
+                        label: Text(suggestion),
+                        onPressed: () => _handleSubmitted(suggestion),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
 
             // Chat area
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16),
-                itemCount: vm.chatHistory.length + (vm.isProcessing ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == vm.chatHistory.length && vm.isProcessing) {
-                    return const _TypingIndicator();
-                  }
-                  
-                  final message = vm.chatHistory[index];
-                  return _MessageBubble(message: message);
+              child: Selector<AssistantViewModel, int>(
+                selector: (_, vm) => vm.chatHistory.length + (vm.isProcessing ? 1 : 0),
+                builder: (context, itemCount, _) {
+                  final assistantVm = context.read<AssistantViewModel>();
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: itemCount,
+                    itemBuilder: (context, index) {
+                      if (index == assistantVm.chatHistory.length && assistantVm.isProcessing) {
+                        return const _TypingIndicator();
+                      }
+                      
+                      final message = assistantVm.chatHistory[index];
+                      return _MessageBubble(message: message);
+                    },
+                  );
                 },
               ),
             ),
@@ -301,10 +311,46 @@ class _MessageBubble extends StatelessWidget {
                                  ),
                                );
                              }).toList(),
-                           ),
-                         ),
+                            ),
+                          ),
 
-                      // Render comparison
+                       // Render confirmation buttons
+                       if (message.type == AssistantResponseType.confirmation && message.confirmPayload != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16.0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () {
+                                      final p = message.cancelPayload ?? 'cancel';
+                                      context.read<AssistantViewModel>().processUserMessage(p);
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppColors.textSecondaryDark,
+                                      side: const BorderSide(color: AppColors.borderDark),
+                                    ),
+                                    child: const Text('Cancel'),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: FilledButton(
+                                    onPressed: () {
+                                      context.read<AssistantViewModel>().processUserMessage('confirmaction ${message.confirmPayload}');
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: const Text('Confirm'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                       // Render comparison
                       if (message.type == AssistantResponseType.comparison && message.amount != null && message.lastAmount != null)
                          Padding(
                            padding: const EdgeInsets.only(top: 12.0),

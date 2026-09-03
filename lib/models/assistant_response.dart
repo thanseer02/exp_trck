@@ -10,6 +10,7 @@ enum AssistantResponseType {
   comparison,
   actionButton,
   help,
+  confirmation,
 }
 
 class AssistantResponse {
@@ -32,6 +33,8 @@ class AssistantResponse {
   final String? actionRoute;
   final Map<String, dynamic>? actionArguments;
   final Map<String, List<String>>? helpGroups;
+  final String? confirmPayload;
+  final String? cancelPayload;
 
   AssistantResponse({
     required this.message,
@@ -50,6 +53,8 @@ class AssistantResponse {
     this.actionRoute,
     this.actionArguments,
     this.helpGroups,
+    this.confirmPayload,
+    this.cancelPayload,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 }
