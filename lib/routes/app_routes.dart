@@ -10,6 +10,7 @@ import '../views/transfer_view.dart';
 import '../views/manage_categories_view.dart';
 import '../views/add_edit_category_view.dart';
 import '../views/category_details_view.dart';
+import '../views/assistant_view.dart';
 
 import '../models/transaction.dart';
 import '../models/category.dart';
@@ -26,6 +27,7 @@ class AppRoutes {
   static const String manageCategories = '/manage-categories';
   static const String addEditCategory = '/add-edit-category';
   static const String categoryDetails = '/category-details';
+  static const String assistant = '/assistant';
 
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
@@ -66,6 +68,8 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => CategoryDetailsView(category: category, month: month),
         );
+      case assistant:
+        return MaterialPageRoute(builder: (_) => const AssistantView());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

@@ -13,6 +13,12 @@ enum AssistantIntent {
   monthlyComparison,
   categoryComparison,
   spendingInsight,
+  transactionCount,
+  categoryIncreaseMost,
+  categoryDecreaseMost,
+  savings,
+  spendPercentage,
+  mostExpensiveDay,
   help,
   unknown,
 }

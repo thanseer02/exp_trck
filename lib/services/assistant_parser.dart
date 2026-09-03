@@ -32,6 +32,10 @@ class AssistantParser {
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       startDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
       endDate = startDate.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
+    } else if (normalized.contains('last week')) {
+      final startOfLastWeek = now.subtract(Duration(days: now.weekday - 1 + 7));
+      startDate = DateTime(startOfLastWeek.year, startOfLastWeek.month, startOfLastWeek.day);
+      endDate = startDate.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
     } else if (normalized.contains('this month')) {
       startDate = DateTime(now.year, now.month, 1);
       endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
@@ -44,6 +48,13 @@ class AssistantParser {
     } else if (normalized.contains('last year')) {
       startDate = DateTime(now.year - 1, 1, 1);
       endDate = DateTime(now.year - 1, 12, 31, 23, 59, 59);
+    } else if (month != null) {
+      final int targetYear = year ?? now.year;
+      startDate = DateTime(targetYear, month, 1);
+      endDate = DateTime(targetYear, month + 1, 0, 23, 59, 59);
+    } else if (year != null) {
+      startDate = DateTime(year, 1, 1);
+      endDate = DateTime(year, 12, 31, 23, 59, 59);
     }
     
     return AssistantQuery(
@@ -142,6 +153,48 @@ class AssistantParser {
       r'history'
     ])) {
       return AssistantIntent.recentTransactions;
+    }
+    
+    if (_matches(text, [
+      r'how many transactions',
+      r'number of transactions',
+    ])) {
+      return AssistantIntent.transactionCount;
+    }
+    
+    if (_matches(text, [
+      r'category increased',
+      r'increased the most',
+    ])) {
+      return AssistantIntent.categoryIncreaseMost;
+    }
+    
+    if (_matches(text, [
+      r'category decreased',
+      r'decreased the most',
+    ])) {
+      return AssistantIntent.categoryDecreaseMost;
+    }
+    
+    if (_matches(text, [
+      r'save',
+      r'savings',
+    ])) {
+      return AssistantIntent.savings;
+    }
+    
+    if (_matches(text, [
+      r'percentage',
+      r'percent',
+    ])) {
+      return AssistantIntent.spendPercentage;
+    }
+    
+    if (_matches(text, [
+      r'most expensive day',
+      r'highest spending day',
+    ])) {
+      return AssistantIntent.mostExpensiveDay;
     }
     
     if (_matches(text, [r'^hello', r'^hi\b'])) {

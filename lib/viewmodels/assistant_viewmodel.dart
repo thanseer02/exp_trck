@@ -11,23 +11,60 @@ class AssistantViewModel extends ChangeNotifier {
   final AssistantResponseGenerator _generator;
 
   final List<AssistantResponse> _chatHistory = [];
+  List<String> _currentSuggestions = [];
   bool _isProcessing = false;
+  bool _hasTransactions = true;
 
   AssistantViewModel(this._repository, this._parser, this._generator) {
-    // Add initial greeting
-    _chatHistory.add(AssistantResponse(
-      message: 'Hi there! I am your offline Money Assistant. How can I help you today?',
-    ));
+    _initAssistant();
   }
 
   List<AssistantResponse> get chatHistory => _chatHistory;
+  List<String> get currentSuggestions => _currentSuggestions;
   bool get isProcessing => _isProcessing;
+  bool get hasTransactions => _hasTransactions;
+
+  Future<void> _initAssistant() async {
+    _isProcessing = true;
+    notifyListeners();
+
+    try {
+      final total = await _repository.getTotalExpenses();
+      final income = await _repository.getTotalIncome();
+      _hasTransactions = (total > 0 || income > 0);
+      
+      if (!_hasTransactions) {
+        _chatHistory.add(AssistantResponse(
+          message: 'Add your first transaction to start using Money Assistant.',
+        ));
+        _currentSuggestions = [];
+      } else {
+        _chatHistory.add(AssistantResponse(
+          message: 'Hi there! I am your offline Money Assistant. How can I help you today?',
+        ));
+        _currentSuggestions = [
+          "Where did I spend most?",
+          "How much did I spend this month?",
+          "What was my biggest expense?",
+          "Did I spend more than last month?",
+        ];
+      }
+    } catch (e) {
+      _chatHistory.add(AssistantResponse(
+        message: 'Hi there! I am your offline Money Assistant. How can I help you today?',
+      ));
+    } finally {
+      _isProcessing = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> processUserMessage(String message) async {
     if (message.trim().isEmpty) return;
 
     // 1. Add user message to history
     _chatHistory.add(AssistantResponse(message: message, isUser: true));
+    _currentSuggestions = []; // Clear suggestions while processing
     _isProcessing = true;
     notifyListeners();
 
@@ -100,8 +137,7 @@ class AssistantViewModel extends ChangeNotifier {
           data = await _repository.getAssistantTopSpendingCategory(start: start, end: end);
           break;
         case AssistantIntent.largestExpense:
-          final amt = await _repository.getLargestExpense(start: start, end: end);
-          data = {'amount': amt, 'category': 'General'}; // We don't fetch the name in the basic query, but good enough for now
+          data = await _repository.getLargestExpenseTransaction(start: start, end: end);
           break;
         case AssistantIntent.averageExpense:
           data = await _repository.getAverageExpense(start: start, end: end);
@@ -122,17 +158,74 @@ class AssistantViewModel extends ChangeNotifier {
       }
 
       // 4. Generate Response
-      final response = _generator.generateResponse(query.intent, data);
+      final response = _generator.generateResponse(query, data);
       _chatHistory.add(response);
+      _generateFollowUpSuggestions(query.intent, data);
       
     } catch (e) {
       _chatHistory.add(AssistantResponse(
         message: 'Sorry, I ran into an issue retrieving that information.',
         isError: true,
       ));
+      _generateFollowUpSuggestions(AssistantIntent.unknown, null);
     } finally {
       _isProcessing = false;
       notifyListeners();
+    }
+  }
+
+  void _generateFollowUpSuggestions(AssistantIntent intent, dynamic data) {
+    if (!_hasTransactions) {
+      _currentSuggestions = [];
+      return;
+    }
+
+    switch (intent) {
+      case AssistantIntent.topSpendingCategory:
+        if (data != null && data['name'] != null) {
+          final cat = data['name'];
+          _currentSuggestions = [
+            "How much on $cat?",
+            "Compare $cat with last month",
+            "Show $cat transactions",
+          ];
+        } else {
+          _currentSuggestions = ["What's my balance?", "Did I spend more than last month?"];
+        }
+        break;
+      case AssistantIntent.balance:
+      case AssistantIntent.totalExpense:
+      case AssistantIntent.monthlyExpense:
+        _currentSuggestions = [
+          "Where did I spend most?",
+          "What was my biggest expense?",
+          "Show recent transactions",
+        ];
+        break;
+      case AssistantIntent.categoryExpense:
+        if (data != null && data['name'] != null) {
+           final cat = data['name'];
+           _currentSuggestions = [
+             "Compare $cat with last month",
+             "Show $cat transactions",
+           ];
+        } else {
+           _currentSuggestions = ["Where did I spend most?"];
+        }
+        break;
+      case AssistantIntent.largestExpense:
+        _currentSuggestions = [
+          "Where did I spend most?",
+          "What's my average expense?",
+        ];
+        break;
+      default:
+        _currentSuggestions = [
+          "Where did I spend most?",
+          "How much did I spend this month?",
+          "What's my balance?",
+        ];
+        break;
     }
   }
 }

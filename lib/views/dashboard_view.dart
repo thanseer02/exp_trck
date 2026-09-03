@@ -7,6 +7,7 @@ import '../viewmodels/settings_viewmodel.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
 import '../viewmodels/category_viewmodel.dart';
+import '../viewmodels/insight_viewmodel.dart';
 import '../models/category.dart';
 import '../routes/app_routes.dart';
 
@@ -26,6 +27,7 @@ class _DashboardViewState extends State<DashboardView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<TransactionViewModel>().loadDashboardData();
+        context.read<InsightViewModel>().loadInsights();
       }
     });
   }
@@ -49,8 +51,10 @@ class _DashboardViewState extends State<DashboardView> {
       backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () =>
-              context.read<TransactionViewModel>().loadDashboardData(),
+          onRefresh: () async {
+              context.read<TransactionViewModel>().loadDashboardData();
+              context.read<InsightViewModel>().loadInsights();
+          },
           color: AppColors.primary,
           backgroundColor: AppColors.surfaceDark,
           child: CustomScrollView(
@@ -76,6 +80,7 @@ class _DashboardViewState extends State<DashboardView> {
                       const SizedBox(height: 40),
                       const _QuickActionHub(),
                       const SizedBox(height: 48),
+                      const _InsightsSection(),
                       const _WeeklyCadenceSection(),
                       const SizedBox(height: 40),
                       const _RecentActivitySection(),
@@ -91,6 +96,13 @@ class _DashboardViewState extends State<DashboardView> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.auto_awesome, color: Colors.white),
+        onPressed: () {
+          Navigator.pushNamed(context, AppRoutes.assistant);
+        },
       ),
     );
   }
@@ -907,6 +919,87 @@ class _FinancialTipBanner extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _InsightsSection extends StatelessWidget {
+  const _InsightsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<InsightViewModel>();
+    final insights = vm.currentInsights;
+
+    if (vm.isLoading || insights.isEmpty) {
+      return const SizedBox.shrink(); // Hide if loading or no insights
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.insights, color: AppColors.primary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Insights',
+              style: AppStyles.heading2.copyWith(color: AppColors.textPrimaryDark),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        ...insights.map((insight) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.borderDark, width: 1),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerHighDark,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(insight.icon, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        insight.title,
+                        style: const TextStyle(
+                          color: AppColors.textPrimaryDark,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        insight.description,
+                        style: const TextStyle(
+                          color: AppColors.textSecondaryDark,
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+        const SizedBox(height: 48), // Match spacing of other sections
+      ],
     );
   }
 }

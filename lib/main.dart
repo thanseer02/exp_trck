@@ -8,6 +8,8 @@ import 'viewmodels/settings_viewmodel.dart';
 import 'viewmodels/assistant_viewmodel.dart';
 import 'services/assistant_parser.dart';
 import 'services/assistant_response_generator.dart';
+import 'services/insight_engine.dart';
+import 'viewmodels/insight_viewmodel.dart';
 import 'routes/app_routes.dart';
 import 'database/app_database.dart';
 import 'repositories/transaction_repository.dart';
@@ -50,6 +52,11 @@ void main() async {
         Provider<AssistantParser>(create: (_) => AssistantParser()),
         Provider<AssistantResponseGenerator>(
           create: (_) => AssistantResponseGenerator(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => InsightViewModel(
+            InsightEngine(context.read<TransactionRepository>()),
+          ),
         ),
         ChangeNotifierProvider(
           create: (context) => AssistantViewModel(

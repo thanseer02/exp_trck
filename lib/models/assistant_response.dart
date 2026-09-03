@@ -1,3 +1,6 @@
+import '../models/transaction.dart';
+import '../models/category.dart';
+
 enum AssistantResponseType {
   text,
   amount,
@@ -18,11 +21,15 @@ class AssistantResponse {
   final AssistantResponseType type;
   final double? amount;
   final double? percentage;
-  final String? category;
-  final List<dynamic>? transactions; // Should be List<Transaction> but dynamic for simplicity across layers
+  final String? categoryName;
+  final Category? category;
+  final List<Transaction>? transactions;
+  final Transaction? transaction;
   final double? comparisonAmount;
+  final double? lastAmount;
   final String? actionLabel;
   final String? actionRoute;
+  final Map<String, dynamic>? actionArguments;
 
   AssistantResponse({
     required this.message,
@@ -31,11 +38,15 @@ class AssistantResponse {
     this.type = AssistantResponseType.text,
     this.amount,
     this.percentage,
+    this.categoryName,
     this.category,
     this.transactions,
+    this.transaction,
     this.comparisonAmount,
+    this.lastAmount,
     this.actionLabel,
     this.actionRoute,
+    this.actionArguments,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 }

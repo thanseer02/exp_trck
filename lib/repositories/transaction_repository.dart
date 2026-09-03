@@ -281,17 +281,16 @@ class TransactionRepository {
 
   // --- Assistant Analytics Methods ---
 
-  Future<Map<String, dynamic>?> getAssistantTopSpendingCategory({DateTime? start, DateTime? end}) async {
+Future<Map<String, dynamic>?> getAssistantTopSpendingCategory({DateTime? start, DateTime? end}) async {
     try {
       final amountExp = _db.transactions.amount.sum();
       
-      var query = _db.selectOnly(_db.transactions)
-        ..join([
-          innerJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId))
-        ])
-        ..addColumns([_db.categories.name, amountExp])
+      var query = _db.select(_db.transactions).join([
+        innerJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId))
+      ])
+        ..addColumns([amountExp])
         ..where(_db.transactions.type.equals('expense'))
-        ..groupBy([_db.categories.name])
+        ..groupBy([_db.categories.id])
         ..orderBy([OrderingTerm(expression: amountExp, mode: OrderingMode.desc)])
         ..limit(1);
         
@@ -302,8 +301,17 @@ class TransactionRepository {
       final row = await query.getSingleOrNull();
       if (row == null) return null;
       
-      final name = row.read(_db.categories.name);
+      final dbCategory = row.readTable(_db.categories);
       final amount = row.read(amountExp);
+      
+      final category = domain.Category(
+        id: dbCategory.id,
+        name: dbCategory.name,
+        icon: dbCategory.icon,
+        type: TransactionTypeExtension.fromString(dbCategory.type),
+        isDefault: dbCategory.isDefault,
+        createdAt: dbCategory.createdAt,
+      );
       
       // Get total expenses to calculate percentage
       var totalQuery = _db.selectOnly(_db.transactions)
@@ -316,7 +324,8 @@ class TransactionRepository {
       final total = totalRow?.read(amountExp) ?? 0.0;
       
       return {
-        'name': name,
+        'name': category.name,
+        'category': category,
         'amount': amount,
         'total': total
       };
@@ -347,6 +356,46 @@ class TransactionRepository {
       throw Exception('Failed to get category expense: $e');
     }
   }
+
+  
+Future<Map<String, dynamic>?> getLargestExpenseTransaction({DateTime? start, DateTime? end}) async {
+    try {
+      var query = _db.select(_db.transactions).join([
+        leftOuterJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId)),
+      ])
+        ..where(_db.transactions.type.equals('expense'))
+        ..orderBy([OrderingTerm(expression: _db.transactions.amount, mode: OrderingMode.desc)])
+        ..limit(1);
+        
+      if (start != null && end != null) {
+        query.where(_db.transactions.date.isBetweenValues(start, end));
+      }
+      
+      final row = await query.getSingleOrNull();
+      if (row == null) return null;
+      
+      final dbTransaction = row.readTable(_db.transactions);
+      final dbCategory = row.readTableOrNull(_db.categories);
+
+      final tx = domain.Transaction(
+        id: dbTransaction.id,
+        amount: dbTransaction.amount,
+        date: dbTransaction.date,
+        type: TransactionTypeExtension.fromString(dbTransaction.type),
+        categoryId: dbTransaction.categoryId,
+        note: dbTransaction.note,
+        createdAt: dbTransaction.createdAt,
+      );
+      
+      return {
+        'transaction': tx,
+        'categoryName': dbCategory?.name ?? 'General',
+      };
+    } catch (e) {
+      throw Exception('Failed to get largest expense transaction: $e');
+    }
+  }
+
 
   Future<double> getLargestExpense({DateTime? start, DateTime? end}) async {
     try {

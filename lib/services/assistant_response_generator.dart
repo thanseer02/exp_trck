@@ -1,11 +1,17 @@
 import 'package:intl/intl.dart';
 import '../models/assistant_response.dart';
 import '../models/assistant_intent.dart';
+import '../models/category.dart';
+import '../models/transaction.dart';
+import '../routes/app_routes.dart';
+
+import '../models/assistant_query.dart';
 
 class AssistantResponseGenerator {
   final NumberFormat _currencyFormat = NumberFormat.currency(symbol: '₹', decimalDigits: 0);
 
-  AssistantResponse generateResponse(AssistantIntent intent, dynamic data) {
+  AssistantResponse generateResponse(AssistantQuery query, dynamic data) {
+    final intent = query.intent;
     String message = '';
     AssistantResponseType type = AssistantResponseType.text;
     
@@ -20,7 +26,7 @@ class AssistantResponseGenerator {
       case AssistantIntent.monthlyExpense:
       case AssistantIntent.dailyExpense:
         final expense = (data as double?) ?? 0.0;
-        String period = intent == AssistantIntent.monthlyExpense ? 'this month' : (intent == AssistantIntent.dailyExpense ? 'today' : 'recently');
+        String period = intent == AssistantIntent.monthlyExpense ? 'for this period' : (intent == AssistantIntent.dailyExpense ? 'today' : 'recently');
         message = 'You spent ${_currencyFormat.format(expense)} $period.';
         type = AssistantResponseType.amount;
         return AssistantResponse(message: message, type: type, amount: expense);
@@ -28,7 +34,7 @@ class AssistantResponseGenerator {
       case AssistantIntent.totalIncome:
       case AssistantIntent.monthlyIncome:
         final income = (data as double?) ?? 0.0;
-        String period = intent == AssistantIntent.monthlyIncome ? 'this month' : 'recently';
+        String period = intent == AssistantIntent.monthlyIncome ? 'for this period' : 'recently';
         message = 'You earned ${_currencyFormat.format(income)} $period.';
         type = AssistantResponseType.amount;
         return AssistantResponse(message: message, type: type, amount: income);
@@ -41,42 +47,60 @@ class AssistantResponseGenerator {
         final amount = data['amount'] as double;
         final total = data['total'] as double;
         final percentage = total > 0 ? (amount / total * 100) : 0.0;
+        final category = data['category'] as Category?;
         
-        message = '$categoryName is your biggest expense this month. You spent ${_currencyFormat.format(amount)}, which is ${percentage.toStringAsFixed(0)}% of your total spending.';
+        message = '$categoryName is your biggest expense for this period. You spent ${_currencyFormat.format(amount)}, which is ${percentage.toStringAsFixed(0)}% of your total spending.';
+        
         return AssistantResponse(
           message: message, 
           type: AssistantResponseType.category, 
           amount: amount, 
-          category: categoryName, 
-          percentage: percentage
+          categoryName: categoryName, 
+          percentage: percentage,
+          category: category,
+          actionLabel: 'View $categoryName',
+          actionRoute: category != null ? AppRoutes.categoryDetails : null,
+          actionArguments: category != null ? {
+            'category': category,
+            'month': DateTime(DateTime.now().year, DateTime.now().month, 1),
+          } : null,
         );
 
       case AssistantIntent.categoryExpense:
         if (data == null) {
           return AssistantResponse(message: "I couldn't find spending for that category.");
         }
-        final categoryName = data['name'] as String;
-        final amount = data['amount'] as double;
-        message = 'You spent ${_currencyFormat.format(amount)} on $categoryName this month.';
+        final catName = data['name'] as String;
+        final catAmount = data['amount'] as double;
+        message = 'You spent ${_currencyFormat.format(catAmount)} on $catName for this period.';
         return AssistantResponse(
           message: message, 
           type: AssistantResponseType.category, 
-          amount: amount, 
-          category: categoryName
+          amount: catAmount, 
+          categoryName: catName
         );
 
       case AssistantIntent.largestExpense:
-        if (data == null || (data['amount'] as double) == 0) {
+        if (data == null) {
           return AssistantResponse(message: "You don't have any recorded expenses.");
         }
-        final amount = data['amount'] as double;
-        final categoryName = (data['category'] as String?) ?? 'General';
+        final mapData = data as Map<String, dynamic>;
+        final transaction = mapData['transaction'] as Transaction;
+        final categoryName = mapData['categoryName'] as String;
+        final amount = transaction.amount;
+        
         message = 'Your biggest expense was ${_currencyFormat.format(amount)} on $categoryName.';
         return AssistantResponse(
           message: message, 
           type: AssistantResponseType.amount, 
           amount: amount,
-          category: categoryName
+          categoryName: categoryName,
+          transaction: transaction,
+          actionLabel: 'View Transaction',
+          actionRoute: AppRoutes.addEditTransaction,
+          actionArguments: {
+            'transaction': transaction,
+          },
         );
 
       case AssistantIntent.averageExpense:
@@ -88,12 +112,11 @@ class AssistantResponseGenerator {
         if (data == null || (data as List).isEmpty) {
           return AssistantResponse(message: 'No recent transactions found.');
         }
-        // Fallback text rendering if UI doesn't handle transactionList type
         message = 'Here are your recent transactions:';
         return AssistantResponse(
           message: message, 
           type: AssistantResponseType.transactionList,
-          transactions: data as List<dynamic>
+          transactions: (data as List).cast<Transaction>(),
         );
 
       case AssistantIntent.monthlyComparison:
@@ -114,6 +137,8 @@ class AssistantResponseGenerator {
         return AssistantResponse(
           message: message, 
           type: AssistantResponseType.comparison, 
+          amount: currentMonth,
+          lastAmount: lastMonth,
           comparisonAmount: diff
         );
 
@@ -123,7 +148,7 @@ class AssistantResponseGenerator {
           message: message,
           type: AssistantResponseType.actionButton,
           actionLabel: 'View Dashboard',
-          actionRoute: '/dashboard'
+          actionRoute: AppRoutes.dashboard
         );
 
       case AssistantIntent.unknown:
