@@ -73,7 +73,7 @@ class _DashboardViewState extends State<DashboardView> {
                   const SizedBox(height: 8),
                   Text(
                     '${context.read<SettingsViewModel>().currencySymbol}${viewModel.balance.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold, letterSpacing: -1.0),
                   ),
                 ],
               ),
@@ -145,9 +145,17 @@ class _DashboardViewState extends State<DashboardView> {
             ),
             const SizedBox(height: 16),
             if (viewModel.topSpending.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(child: Text('No expenses recorded this month.', style: TextStyle(color: Colors.grey))),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.pie_chart_outline, size: 48, color: Colors.grey.shade300),
+                      const SizedBox(height: 8),
+                      const Text('No expenses recorded this month.', style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                ),
               )
             else
               ...viewModel.topSpending.map((spending) {
@@ -184,9 +192,17 @@ class _DashboardViewState extends State<DashboardView> {
             ),
             const SizedBox(height: 16),
             if (viewModel.recentTransactions.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 32.0),
-                child: Center(child: Text('No recent transactions.', style: TextStyle(color: Colors.grey))),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32.0),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.receipt_long, size: 48, color: Colors.grey.shade300),
+                      const SizedBox(height: 8),
+                      const Text('No recent transactions.', style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                ),
               )
             else
               ...viewModel.recentTransactions.map((tx) {

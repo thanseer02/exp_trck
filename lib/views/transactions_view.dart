@@ -190,7 +190,18 @@ class _TransactionsViewState extends State<TransactionsView> {
             child: vm.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : filteredTx.isEmpty
-                    ? const Center(child: Text('No transactions found.'))
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.receipt_long, size: 64, color: Colors.grey.shade400),
+                            const SizedBox(height: 16),
+                            const Text('No transactions found.', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                            const SizedBox(height: 8),
+                            const Text('Tap + to add your first transaction.', style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: groupedTx.length,
                         itemBuilder: (context, index) {

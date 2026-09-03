@@ -35,14 +35,15 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         index: _currentIndex,
         children: _screens,
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddEditTransactionView()),
           );
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Add'),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

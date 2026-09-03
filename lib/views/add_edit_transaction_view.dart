@@ -46,6 +46,28 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
     });
   }
 
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'restaurant': return Icons.restaurant;
+      case 'directions_car': return Icons.directions_car;
+      case 'shopping_cart': return Icons.shopping_cart;
+      case 'receipt': return Icons.receipt;
+      case 'home': return Icons.home;
+      case 'movie': return Icons.movie;
+      case 'local_hospital': return Icons.local_hospital;
+      case 'school': return Icons.school;
+      case 'flight': return Icons.flight;
+      case 'local_grocery_store': return Icons.local_grocery_store;
+      case 'subscriptions': return Icons.subscriptions;
+      case 'attach_money': return Icons.attach_money;
+      case 'work': return Icons.work;
+      case 'business': return Icons.business;
+      case 'card_giftcard': return Icons.card_giftcard;
+      case 'category': 
+      default: return Icons.category;
+    }
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -215,6 +237,8 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                         border: const OutlineInputBorder(),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      autofocus: true,
+                      textInputAction: TextInputAction.next,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter an amount';
@@ -233,33 +257,41 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                       },
                     ),
                     const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                    const Text('Category', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
                     FormField<Category>(
                       validator: (value) => _selectedCategory == null ? 'Please select a category' : null,
                       builder: (FormFieldState<Category> state) {
-                        return InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: 'Category',
-                            border: const OutlineInputBorder(),
-                            errorText: state.errorText,
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<Category>(
-                              value: _selectedCategory,
-                              isDense: true,
-                              items: categories.map((Category category) {
-                                return DropdownMenuItem<Category>(
-                                  value: category,
-                                  child: Text(category.name),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: categories.map((Category category) {
+                                final isSelected = _selectedCategory?.id == category.id;
+                                return ChoiceChip(
+                                  label: Text(category.name),
+                                  avatar: Icon(_getIconData(category.icon), size: 18, color: isSelected ? Colors.white : Colors.deepPurple),
+                                  selected: isSelected,
+                                  selectedColor: Colors.deepPurple,
+                                  labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87),
+                                  onSelected: (bool selected) {
+                                    setState(() {
+                                      _selectedCategory = category;
+                                    });
+                                    state.didChange(category);
+                                  },
                                 );
                               }).toList(),
-                              onChanged: (Category? newValue) {
-                                setState(() {
-                                  _selectedCategory = newValue;
-                                });
-                                state.didChange(newValue);
-                              },
                             ),
-                          ),
+                            if (state.hasError)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+                                child: Text(state.errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                              ),
+                          ],
                         );
                       },
                     ),
@@ -280,6 +312,8 @@ class _AddEditTransactionViewState extends State<AddEditTransactionView> {
                         labelText: 'Note (Optional)',
                         border: OutlineInputBorder(),
                       ),
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _saveTransaction(),
                       onSaved: (value) {
                         _note = value;
                       },
