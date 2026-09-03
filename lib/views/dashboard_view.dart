@@ -314,7 +314,7 @@ class _QuickActionHub extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _ActionBtn(
           icon: Icons.add, 
@@ -331,20 +331,6 @@ class _QuickActionHub extends StatelessWidget {
           onTap: () {
             Navigator.pushNamed(context, AppRoutes.addEditTransaction, arguments: {'initialType': TransactionType.expense});
           },
-        ),
-        _ActionBtn(
-          icon: Icons.swap_horiz, 
-          label: 'Transfer', 
-          iconColor: AppColors.textPrimaryDark,
-          onTap: () {
-            Navigator.pushNamed(context, AppRoutes.transfer);
-          },
-        ),
-        _ActionBtn(
-          icon: Icons.filter_center_focus, 
-          label: 'Scan', 
-          iconColor: AppColors.textPrimaryDark,
-          onTap: () {},
         ),
       ],
     );
