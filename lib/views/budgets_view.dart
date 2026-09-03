@@ -1,8 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
+import '../viewmodels/transaction_viewmodel.dart';
+import '../viewmodels/settings_viewmodel.dart';
 
-class BudgetsView extends StatelessWidget {
+class BudgetsView extends StatefulWidget {
   const BudgetsView({super.key});
+
+  @override
+  State<BudgetsView> createState() => _BudgetsViewState();
+}
+
+class _BudgetsViewState extends State<BudgetsView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<TransactionViewModel>().loadDashboardData();
+        context.read<TransactionViewModel>().loadAnalyticsData();
+      }
+    });
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'restaurant': return Icons.restaurant;
+      case 'directions_car': return Icons.directions_car;
+      case 'shopping_cart': return Icons.shopping_cart;
+      case 'receipt': return Icons.receipt;
+      case 'home': return Icons.home;
+      case 'movie': return Icons.movie;
+      case 'local_hospital': return Icons.local_hospital;
+      case 'school': return Icons.school;
+      case 'flight': return Icons.flight;
+      case 'local_grocery_store': return Icons.local_grocery_store;
+      case 'subscriptions': return Icons.subscriptions;
+      case 'attach_money': return Icons.attach_money;
+      case 'work': return Icons.work;
+      case 'business': return Icons.business;
+      case 'card_giftcard': return Icons.card_giftcard;
+      case 'category': 
+      default: return Icons.category_outlined;
+    }
+  }
+
+  Color _getCategoryColor(int index) {
+    const colors = [
+      Colors.blue,
+      Color(0xFFF87171),
+      Colors.purpleAccent,
+      Colors.orange,
+      Colors.teal,
+    ];
+    return colors[index % colors.length];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,227 +75,254 @@ class BudgetsView extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              const Text(
-                'Budgets & Targets',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimaryDark),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Keep your spending in check',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark),
-              ),
-              const SizedBox(height: 32),
-              
-              // Overall Discretionary Budget
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.borderDark),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'MONTHLY DISCRETIONARY',
-                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5),
-                        ),
-                        const Icon(Icons.more_horiz, color: AppColors.textSecondaryDark, size: 20),
-                      ],
+      body: Consumer2<TransactionViewModel, SettingsViewModel>(
+        builder: (context, vm, settings, child) {
+          final isLoading = vm.isLoading;
+          if (isLoading) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          }
+
+          final totalExpense = vm.monthlySummary?.totalExpense ?? 0.0;
+          final totalIncome = vm.monthlySummary?.totalIncome ?? 0.0;
+          final totalBalance = vm.balance;
+
+          // Assuming a global budget limit of $3,000 for demonstration, unless income exists
+          final globalBudget = totalIncome > 0 ? totalIncome * 0.8 : 3000.0;
+          final spentRatio = (totalExpense / globalBudget).clamp(0.0, 1.0);
+          final remaining = (globalBudget - totalExpense).clamp(0.0, double.infinity);
+          
+          final isOverBudget = totalExpense > globalBudget;
+
+          final categoryBudgets = vm.topSpending;
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  const Text(
+                    'Budgets & Targets',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimaryDark),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Keep your spending in check',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Overall Discretionary Budget
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.borderDark),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '\$1,420.50',
-                          style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'MONTHLY DISCRETIONARY',
+                              style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                            ),
+                            const Icon(Icons.more_horiz, color: AppColors.textSecondaryDark, size: 20),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'left of \$3,000.00',
-                          style: TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              settings.formatAmount(totalExpense),
+                              style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1.0),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'spent of ${settings.formatAmount(globalBudget)}',
+                              style: const TextStyle(color: AppColors.textTertiaryDark, fontSize: 12),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    // Progress Bar
-                    Container(
-                      height: 8,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHighDark,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: 0.52, // 52% spent
-                        child: Container(
+                        const SizedBox(height: 24),
+                        // Progress Bar
+                        Container(
+                          height: 8,
+                          width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppColors.income,
+                            color: AppColors.surfaceContainerHighDark,
                             borderRadius: BorderRadius.circular(4),
                           ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: spentRatio,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isOverBudget ? const Color(0xFFF87171) : AppColors.income,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'On track',
-                          style: TextStyle(color: AppColors.income, fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '11 days left',
-                          style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isOverBudget ? 'Over budget' : 'On track',
+                              style: TextStyle(
+                                color: isOverBudget ? const Color(0xFFF87171) : AppColors.income,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '${settings.formatAmount(remaining)} left',
+                              style: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 11),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 48),
-              
-              // By Category Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Category Budgets', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
-                  Text('Edit', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Category Budgets List
-              _BudgetCategoryRow(
-                icon: Icons.restaurant,
-                name: 'Food & Dining',
-                spent: '\$780.20',
-                total: '\$1,000.00',
-                percent: 0.78,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 24),
-              _BudgetCategoryRow(
-                icon: Icons.shopping_cart,
-                name: 'Shopping & Tech',
-                spent: '\$540.00',
-                total: '\$400.00',
-                percent: 1.0, // Over budget
-                isOverBudget: true,
-                color: const Color(0xFFF87171),
-              ),
-              const SizedBox(height: 24),
-              _BudgetCategoryRow(
-                icon: Icons.movie,
-                name: 'Entertainment',
-                spent: '\$120.00',
-                total: '\$300.00',
-                percent: 0.4,
-                color: Colors.purpleAccent,
-              ),
-              
-              const SizedBox(height: 48),
-              
-              // Savings Goals Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Savings Goals', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
-                  Text('Add', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Savings Goal Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.borderDark),
-                ),
-                child: Column(
-                  children: [
-                    Row(
+                  ),
+                  
+                  const SizedBox(height: 48),
+                  
+                  // By Category Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Category Budgets', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
+                      const Text('Edit', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  if (categoryBudgets.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: Text('No spending data to generate category budgets.', style: TextStyle(color: AppColors.textSecondaryDark)),
+                      ),
+                    )
+                  else
+                    // Category Budgets List dynamically from Top Expenses
+                    ...List.generate(categoryBudgets.length, (index) {
+                      final item = categoryBudgets[index];
+                      // Assigning a realistic mock budget based on the spending to demonstrate UI
+                      final categoryLimit = item.totalAmount * 1.25 + 50.0;
+                      final percent = (item.totalAmount / categoryLimit).clamp(0.0, 1.0);
+                      final isCatOverBudget = item.totalAmount > categoryLimit;
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
+                        child: _BudgetCategoryRow(
+                          icon: _getIconData(item.category.icon),
+                          name: item.category.name,
+                          spent: settings.formatAmount(item.totalAmount),
+                          total: settings.formatAmount(categoryLimit),
+                          percent: percent,
+                          color: _getCategoryColor(index),
+                          isOverBudget: isCatOverBudget,
+                        ),
+                      );
+                    }),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Savings Goals Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Savings Goals', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w600)),
+                      const Text('Add', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Savings Goal Card mapped to global balance
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.borderDark),
+                    ),
+                    child: Column(
                       children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: const BoxDecoration(
+                                color: AppColors.surfaceContainerLowDark,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.shield_outlined, color: AppColors.income, size: 20),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Emergency Reserve', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 4),
+                                  Text('${settings.formatAmount(totalBalance)} of ${settings.formatAmount(10000.0)}', style: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                            Text('${((totalBalance / 10000.0).clamp(0.0, 1.0) * 100).toInt()}%', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
                         Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surfaceContainerLowDark,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.shield_outlined, color: AppColors.income, size: 20),
-                        ),
-                        const SizedBox(width: 16),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Emergency Reserve', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, fontWeight: FontWeight.bold)),
-                              SizedBox(height: 4),
-                              Text('\$14,500.00 of \$20,000.00', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
-                            ],
-                          ),
-                        ),
-                        const Text('72%', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 16, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      height: 6,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHighDark,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: 0.72,
-                        child: Container(
+                          height: 6,
+                          width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppColors.income,
+                            color: AppColors.surfaceContainerHighDark,
                             borderRadius: BorderRadius.circular(3),
                           ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: (totalBalance / 10000.0).clamp(0.0, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.income,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.borderDark),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () {},
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppColors.borderDark),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: const Text('Add Funds', style: TextStyle(color: AppColors.textPrimaryDark)),
+                          ),
                         ),
-                        child: const Text('Add Funds', style: TextStyle(color: AppColors.textPrimaryDark)),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  
+                  const SizedBox(height: 64),
+                ],
               ),
-              
-              const SizedBox(height: 64),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
