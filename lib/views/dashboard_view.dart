@@ -12,6 +12,7 @@ import 'transactions_view.dart';
 import 'budgets_view.dart';
 import 'add_edit_transaction_view.dart';
 import 'transfer_view.dart';
+import 'settings_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -122,8 +123,13 @@ class _FlowLedgerDarkHeader extends StatelessWidget {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none, color: AppColors.textSecondaryDark, size: 22),
-          onPressed: () {},
+          icon: const Icon(Icons.settings, color: AppColors.textSecondaryDark, size: 22),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsView()),
+            );
+          },
         ),
         const SizedBox(width: 8),
       ],
@@ -131,12 +137,49 @@ class _FlowLedgerDarkHeader extends StatelessWidget {
   }
 }
 
-class _GreetingSection extends StatelessWidget {
+class _GreetingSection extends StatefulWidget {
   const _GreetingSection();
+
+  @override
+  State<_GreetingSection> createState() => _GreetingSectionState();
+}
+
+class _GreetingSectionState extends State<_GreetingSection> {
+  late String _quote;
+
+  final List<String> _quotes = [
+    "Every cent counts.",
+    "A penny saved is a penny earned.",
+    "Track your expenses, secure your future.",
+    "Small steps lead to big savings.",
+    "Take control of your finances.",
+    "Invest in your future today.",
+    "Budgeting is the first step to financial freedom.",
+    "Keep pushing towards your goals.",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _quotes.shuffle();
+    _quote = _quotes.first;
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Good morning';
+    } else if (hour < 17) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final today = DateFormat('MMMM d, yyyy').format(DateTime.now());
+    final userName = context.watch<SettingsViewModel>().userName;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,13 +194,22 @@ class _GreetingSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Good morning, Alex',
-          style: TextStyle(
+        Text(
+          '${_getGreeting()}, $userName',
+          style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimaryDark,
             letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          _quote,
+          style: const TextStyle(
+            fontSize: 14,
+            fontStyle: FontStyle.italic,
+            color: AppColors.textSecondaryDark,
           ),
         ),
       ],

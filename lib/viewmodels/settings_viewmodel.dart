@@ -8,9 +8,11 @@ class SettingsViewModel extends ChangeNotifier {
   
   static const String _currencyKey = 'currency_symbol';
   static const String _themeModeKey = 'theme_mode';
+  static const String _userNameKey = 'user_name';
 
   String _currencySymbol = '₹';
   ThemeMode _themeMode = ThemeMode.system;
+  String _userName = 'Boss';
 
   SettingsViewModel(this._prefs) {
     _loadSettings();
@@ -18,6 +20,7 @@ class SettingsViewModel extends ChangeNotifier {
 
   String get currencySymbol => _currencySymbol;
   ThemeMode get themeMode => _themeMode;
+  String get userName => _userName;
   
   String formatAmount(double amount) {
     final format = NumberFormat.currency(
@@ -38,6 +41,7 @@ class SettingsViewModel extends ChangeNotifier {
       _themeMode = ThemeMode.system;
     }
     
+    _userName = _prefs.getString(_userNameKey) ?? 'Boss';
     notifyListeners();
   }
 
@@ -50,6 +54,12 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     await _prefs.setInt(_themeModeKey, mode.index);
+    notifyListeners();
+  }
+
+  Future<void> setUserName(String name) async {
+    _userName = name.trim().isEmpty ? 'Boss' : name.trim();
+    await _prefs.setString(_userNameKey, _userName);
     notifyListeners();
   }
 }

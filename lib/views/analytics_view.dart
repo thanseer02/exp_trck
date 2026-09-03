@@ -53,13 +53,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: AppColors.textSecondaryDark, size: 22),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
+
       ),
       body: SafeArea(
         child: SingleChildScrollView(

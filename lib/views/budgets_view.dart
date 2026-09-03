@@ -67,13 +67,7 @@ class _BudgetsViewState extends State<BudgetsView> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: AppColors.textSecondaryDark, size: 22),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
+
       ),
       body: Consumer2<TransactionViewModel, SettingsViewModel>(
         builder: (context, vm, settings, child) {

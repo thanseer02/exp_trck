@@ -18,8 +18,8 @@ class TransactionsView extends StatefulWidget {
 }
 
 class _TransactionsViewState extends State<TransactionsView> {
-  final TextEditingController _searchController = TextEditingController();
-
+  /// Initializes the state by scheduling a callback to load 
+  /// transactions and categories after the first frame is rendered.
   @override
   void initState() {
     super.initState();
@@ -31,12 +31,10 @@ class _TransactionsViewState extends State<TransactionsView> {
     });
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
+
+  /// Builds the main screen of the transactions view, containing an app bar,
+  /// a floating action button to add a transaction, and the transaction list.
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<TransactionViewModel>();
@@ -52,14 +50,7 @@ class _TransactionsViewState extends State<TransactionsView> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Ledger', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: AppColors.textPrimaryDark, size: 22),
-            onPressed: () {
-              // Toggle search bar visibility in future iteration
-            },
-          ),
-        ],
+
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary, // Green FlowLedger action
@@ -98,6 +89,7 @@ class _TransactionsViewState extends State<TransactionsView> {
     );
   }
 
+  /// Builds the widget to display when there are no transactions available.
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -114,6 +106,7 @@ class _TransactionsViewState extends State<TransactionsView> {
     );
   }
 
+  /// Builds a grouped list of transactions, sorted by date in descending order.
   Widget _buildTransactionList(TransactionViewModel vm) {
     // Group transactions by date
     final groupedTransactions = <String, List<Transaction>>{};
@@ -173,6 +166,7 @@ class _FilterChipsSection extends StatelessWidget {
 
   const _FilterChipsSection({required this.vm});
 
+  /// Builds a horizontal scrollable row of filter chips.
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -190,6 +184,7 @@ class _FilterChipsSection extends StatelessWidget {
     );
   }
 
+  /// Builds a single filter chip for a specific transaction type.
   Widget _buildFilterChip(String label, TransactionType? type, TransactionViewModel vm) {
     final isSelected = vm.filterType == type;
     return GestureDetector(
@@ -222,6 +217,7 @@ class _TransactionTile extends StatelessWidget {
 
   const _TransactionTile({required this.tx, required this.vm});
 
+  /// Maps a string icon name to the corresponding [IconData] object.
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'restaurant': return Icons.restaurant;
@@ -244,6 +240,8 @@ class _TransactionTile extends StatelessWidget {
     }
   }
 
+  /// Builds a single transaction list tile with swipe-to-delete functionality
+  /// and tap-to-edit behavior.
   @override
   Widget build(BuildContext context) {
     final isIncome = tx.type == TransactionType.income;

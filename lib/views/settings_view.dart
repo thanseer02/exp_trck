@@ -9,6 +9,41 @@ import 'manage_categories_view.dart';
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
+  void _showNameEditor(BuildContext context, SettingsViewModel vm) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String input = vm.userName;
+        return AlertDialog(
+          title: const Text('Set Your Name'),
+          content: TextField(
+            autofocus: true,
+            controller: TextEditingController(text: input),
+            decoration: const InputDecoration(
+              hintText: 'Enter your name',
+            ),
+            onChanged: (val) {
+              input = val;
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                vm.setUserName(input);
+                Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showCurrencyPicker(BuildContext context, SettingsViewModel vm) {
     showDialog(
       context: context,
@@ -201,6 +236,12 @@ class SettingsView extends StatelessWidget {
             child: ListView(
               children: [
           _buildSectionHeader('Preferences'),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('User Name'),
+            subtitle: Text(settingsVM.userName),
+            onTap: () => _showNameEditor(context, settingsVM),
+          ),
           ListTile(
             leading: const Icon(Icons.attach_money),
             title: const Text('Currency'),
